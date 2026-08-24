@@ -1,0 +1,15 @@
+.wordmark {
+  font-family: var(--font-brand);
+  font-weight: 800;
+  font-size: clamp(1.85rem, 4.6vw, 3.35rem);
+  letter-spacing: 0.04em;
+  line-height: 0.82;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.wordmark--compact {
+  font-size: 1.35rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}

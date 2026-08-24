@@ -1,0 +1,21 @@
+.to-top {
+  position: fixed;
+  right: var(--gutter);
+  bottom: 1.4rem;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--white);
+  border-radius: 999px;
+  background: var(--black);
+  color: var(--white);
+  transition: background var(--ease), color var(--ease);
+}
+
+.to-top:hover,
+.to-top:focus-visible {
+  background: var(--white);
+  color: var(--black);
+}

@@ -1,0 +1,160 @@
+.portal-login {
+  max-width: 28rem;
+}
+
+.portal-login form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.15rem;
+}
+
+.portal-login .field {
+  width: 100%;
+}
+
+.portal-login__hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.portal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
+}
+
+.portal-dash {
+  padding-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+.portal-dash__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+}
+
+.order-list {
+  margin-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.order-list button {
+  width: 100%;
+  text-align: left;
+  padding: 1.05rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 0.25rem;
+  transition: background var(--ease), color var(--ease);
+}
+
+.order-list button span,
+.order-list button em {
+  font-size: 0.78rem;
+  font-style: normal;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.order-list button strong {
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.order-list button:hover,
+.order-list button.is-active {
+  background: var(--white);
+  color: var(--black);
+}
+
+.order-list button:hover span,
+.order-list button:hover em,
+.order-list button.is-active span,
+.order-list button.is-active em {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.order-detail h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  margin: 0.5rem 0 0.5rem;
+}
+
+.order-detail__meta {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.order-detail__note {
+  max-width: 48ch;
+  margin-bottom: 2rem;
+}
+
+.order-track {
+  border-top: 1px solid var(--line);
+  margin-bottom: 2rem;
+}
+
+.order-track__item {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  gap: 0.75rem;
+  padding: 0.95rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.order-track__item span {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  padding-top: 0.2rem;
+}
+
+.order-track__item strong {
+  display: block;
+  font-weight: 500;
+}
+
+.order-track__item em {
+  font-style: normal;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.order-track__item.is-done {
+  background: var(--white);
+  color: var(--black);
+  margin-inline: -0.85rem;
+  padding-inline: 0.85rem;
+}
+
+.order-track__item.is-done span,
+.order-track__item.is-done em {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.order-track__item.is-now strong {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.order-track__item.is-next {
+  opacity: 0.45;
+}
+
+@media (max-width: 800px) {
+  .portal-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .portal-dash__layout {
+    grid-template-columns: 1fr;
+  }
+}
