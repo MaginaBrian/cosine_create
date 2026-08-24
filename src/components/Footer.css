@@ -51,8 +51,9 @@
 }
 
 .footer__lockup .wordmark {
-  font-size: clamp(2.6rem, 9vw, 6.5rem);
-  letter-spacing: 0.03em;
+  font-size: clamp(2.4rem, 8vw, 6rem);
+  letter-spacing: -0.05em;
+  font-weight: 700;
 }
 
 .footer__bar {

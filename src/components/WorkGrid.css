@@ -40,10 +40,10 @@
   place-items: center;
   z-index: 1;
   padding: 1rem;
-  font-family: var(--font-brand);
+  font-family: var(--font);
   font-size: clamp(1.6rem, 3.6vw, 3.1rem);
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   text-align: center;
   line-height: 0.95;

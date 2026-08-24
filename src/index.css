@@ -6,12 +6,12 @@
   --muted: rgba(255, 255, 255, 0.55);
   --faint: rgba(255, 255, 255, 0.08);
 
-  --font: "Neue Haas Grotesk", "Helvetica Now", "Switzer", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font: "Neue Haas Grotesk", "Helvetica Now", "Haas Unica", "Suisse International", "Switzer", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-brand: var(--font);
 
   --container: 1280px;
   --gutter: clamp(1.25rem, 4vw, 3.25rem);
-  --nav-h: 92px;
-  --font-brand: "Big Shoulders Display", "Helvetica Now", "Helvetica Neue", Helvetica, sans-serif;
+  --nav-h: 80px;
   --ease: 0.25s ease;
 
   color-scheme: dark;

@@ -1,0 +1,103 @@
+/* Preferred: Neue Haas Grotesk. Then Helvetica Now, Haas Unica, Suisse International.
+   Files are resolved from the OS when installed; otherwise the next local match. */
+
+@font-face {
+  font-family: "Neue Haas Grotesk";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local("Neue Haas Grotesk Text"),
+    local("Neue Haas Grotesk Display"),
+    local("Neue Haas Grotesk Text Pro"),
+    local("NeueHaasGroteskText-55Roman"),
+    local("NHaasGroteskTXPro-55Rg"),
+    local("Helvetica Now Text"),
+    local("Helvetica Now Display"),
+    local("HelveticaNowText-Regular"),
+    local("Haas Unica"),
+    local("Unica77 LL"),
+    local("LL Unica77"),
+    local("Suisse International"),
+    local("Suisse Intl"),
+    local("SuisseIntl-Regular"),
+    local("Helvetica Neue"),
+    local("Nimbus Sans");
+}
+
+@font-face {
+  font-family: "Neue Haas Grotesk";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    local("Neue Haas Grotesk Text Medium"),
+    local("Neue Haas Grotesk Display Medium"),
+    local("NeueHaasGroteskText-65Medium"),
+    local("NHaasGroteskTXPro-65Md"),
+    local("Helvetica Now Text Medium"),
+    local("HelveticaNowText-Medium"),
+    local("Haas Unica Medium"),
+    local("Suisse International Medium"),
+    local("SuisseIntl-Medium"),
+    local("Helvetica Neue Medium"),
+    local("HelveticaNeue-Medium"),
+    local("Nimbus Sans");
+}
+
+@font-face {
+  font-family: "Neue Haas Grotesk";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src:
+    local("Neue Haas Grotesk Text Bold"),
+    local("Neue Haas Grotesk Display 65 Medium"),
+    local("NeueHaasGroteskText-75Bold"),
+    local("NHaasGroteskTXPro-75Bd"),
+    local("Helvetica Now Text Bold"),
+    local("HelveticaNowText-Bold"),
+    local("Haas Unica Bold"),
+    local("Suisse International SemiBold"),
+    local("SuisseIntl-SemiBold"),
+    local("Helvetica Neue Bold"),
+    local("Nimbus Sans Bold");
+}
+
+@font-face {
+  font-family: "Neue Haas Grotesk";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    local("Neue Haas Grotesk Display Bold"),
+    local("Neue Haas Grotesk Text Bold"),
+    local("NeueHaasGroteskDisp-75Bold"),
+    local("NHaasGroteskDSPro-75Bd"),
+    local("Helvetica Now Display Bold"),
+    local("HelveticaNowDisplay-Bold"),
+    local("Haas Unica Bold"),
+    local("Suisse International Bold"),
+    local("SuisseIntl-Bold"),
+    local("Helvetica Neue Bold"),
+    local("HelveticaNeue-Bold"),
+    local("Nimbus Sans Bold");
+}
+
+@font-face {
+  font-family: "Neue Haas Grotesk";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src:
+    local("Neue Haas Grotesk Display Black"),
+    local("NeueHaasGroteskDisp-95Black"),
+    local("NHaasGroteskDSPro-95Blk"),
+    local("Helvetica Now Display ExtraBold"),
+    local("HelveticaNowDisplay-ExtraBold"),
+    local("Haas Unica ExtraBold"),
+    local("Suisse International Black"),
+    local("SuisseIntl-Black"),
+    local("Helvetica Neue Condensed Black"),
+    local("Nimbus Sans Bold");
+}
