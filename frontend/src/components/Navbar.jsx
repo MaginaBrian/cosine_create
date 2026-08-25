@@ -5,8 +5,8 @@ import "./Navbar.css";
 const LINKS = [
   { href: "#/", label: "Work", match: "/" },
   { href: "#/about", label: "About", match: "/about" },
+  { href: "#/process", label: "Process", match: "/process" },
   { href: "#/people", label: "People", match: "/people" },
-  { href: "#/awards", label: "Awards", match: "/awards" },
 ];
 
 function isCurrent(path, match) {

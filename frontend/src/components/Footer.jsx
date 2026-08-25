@@ -31,8 +31,8 @@ export default function Footer() {
             <p className="eyebrow">Explore</p>
             <a href="#/" className="link">Work</a>
             <a href="#/about" className="link">About</a>
+            <a href="#/process" className="link">Process</a>
             <a href="#/people" className="link">People</a>
-            <a href="#/awards" className="link">Awards</a>
           </div>
           <div className="footer__col">
             <p className="eyebrow">Contact</p>
