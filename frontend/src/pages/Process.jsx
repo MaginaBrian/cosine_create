@@ -1,61 +1,68 @@
-import { useState } from "react";
-import { STAGES } from "../data";
+import "./Essay.css";
 import "./Process.css";
+import {
+  MarkDesign,
+  MarkSourcing,
+  MarkSample,
+  MarkProduction,
+  MarkQuality,
+  MarkDispatch,
+} from "../components/Marks";
 
-const MAKING = {
-  brief: "A conversation, a spec, constraints on the table. The project is named before a mill is called.",
-  source: "Swatches, mills, trims. Material is chosen in the hand, against the use, not from a thumbnail.",
-  sample: "Pattern, toile, stitch, comment. The sample room is where problems are solved in public.",
-  produce: "Markers, cut, sew, press. The line is set to the approved sample — quantity does not change the standard.",
-  distribute: "Measure, pack, label, ship. The last mile is documented so you always know where the work is.",
-};
+const STAGES = [
+  {
+    id: "design",
+    title: "Design",
+    Mark: MarkDesign,
+    body: "You bring what you're trying to make. A sketch, a reference piece, sometimes just a rough idea of the fit you want. We turn that into something a production floor can actually build from. If you don't have a tech pack, that's fine, most founders don't. We create it with you.",
+  },
+  {
+    id: "sourcing",
+    title: "Sourcing",
+    Mark: MarkSourcing,
+    body: "We source our own fabric and trims. Most manufacturers won't touch sourcing at low order quantities because it's more work for less payoff, they push it back onto the client, or they use whatever's sitting in stock. We didn't build the business that way.",
+  },
+  {
+    id: "sample",
+    title: "Sample",
+    Mark: MarkSample,
+    body: "Nothing goes to production until you've held the sample. Fabric hand, fit, construction. You feel it before it exists at scale. Most of the expensive mistakes in this industry happen because someone signed off on a sample too quickly.",
+  },
+  {
+    id: "production",
+    title: "Production",
+    Mark: MarkProduction,
+    body: "We cut and sew at the quantity you actually need, not the quantity that makes a factory's week easier. Small runs take more attention per piece and that's the trade we've built around.",
+  },
+  {
+    id: "quality",
+    title: "Quality",
+    Mark: MarkQuality,
+    body: "Every piece gets checked before it leaves. Quality for us isn't a stage we get to at the end, it's something we're doing the whole time.",
+  },
+  {
+    id: "dispatch",
+    title: "Dispatch",
+    Mark: MarkDispatch,
+    body: "Packed and shipped the way you need it. Whether that's to you, or straight to your own customer.",
+  },
+];
 
 export default function Process() {
-  const [active, setActive] = useState(0);
-  const stage = STAGES[active];
-
   return (
-    <>
-      <header className="page-head">
-        <div className="container">
-          <p className="eyebrow">Process</p>
-          <h1>How an idea gets made.</h1>
-          <p className="page-head__lede">
-            Structure, type and sequence make a complex path simple to follow. Click a stage. See the work behind it.
-          </p>
-        </div>
-      </header>
-
-      <section className="section process-page">
-        <div className="container process-page__layout">
-          <ol className="process-page__nav">
-            {STAGES.map((s, i) => (
-              <li key={s.id}>
-                <button
-                  type="button"
-                  className={i === active ? "is-active" : ""}
-                  onClick={() => setActive(i)}
-                  aria-pressed={i === active}
-                >
-                  <span>{s.id}</span>
-                  {s.name}
-                </button>
-              </li>
-            ))}
-          </ol>
-
-          <article className="process-page__body" aria-live="polite">
-            <p className="eyebrow">Stage {stage.id} of 05</p>
-            <h2>{stage.title}</h2>
-            <p className="process-page__copy">{stage.body}</p>
-            <div className={`process-page__viz process-page__viz--${stage.key}`} aria-hidden="true" />
-            <p className="process-page__making">{MAKING[stage.key]}</p>
-            <a className="btn" href="#/start">
-              Start at this stage
-            </a>
-          </article>
-        </div>
-      </section>
-    </>
+    <article className="essay process">
+      <h1>Process</h1>
+      <div className="process__stages">
+        {STAGES.map(({ id, title, Mark, body }) => (
+          <section key={id} className="process__stage">
+            <div className="process__mark">
+              <Mark />
+            </div>
+            <h2>{title}</h2>
+            <p>{body}</p>
+          </section>
+        ))}
+      </div>
+    </article>
   );
 }

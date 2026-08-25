@@ -1,53 +1,53 @@
-.process__stages {
+.people__roles {
   max-width: 40rem;
   margin-inline: auto;
 }
 
-.process__stage {
+.people__role {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.process__stage + .process__stage {
+.people__role + .people__role {
   margin-top: clamp(3.5rem, 8vw, 5.75rem);
   padding-top: clamp(3.5rem, 8vw, 5.75rem);
   border-top: 1px solid var(--line);
 }
 
-.process__mark {
+.people__mark {
   width: clamp(2.75rem, 7vw, 3.15rem);
   height: clamp(2.75rem, 7vw, 3.15rem);
   margin-bottom: 0.9rem;
   color: var(--white);
 }
 
-.process__mark svg {
+.people__mark svg {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.process__stage h2 {
+.people__role h2 {
   font-size: clamp(1.25rem, 2.2vw, 1.55rem);
   font-weight: 600;
   letter-spacing: -0.02em;
   margin-bottom: 0.95rem;
 }
 
-.process__stage p {
+.people__role p {
   font-size: clamp(1.05rem, 1.65vw, 1.22rem);
   font-weight: 400;
   line-height: 1.65;
 }
 
 @media (min-width: 721px) {
-  .process__stages {
+  .people__roles {
     max-width: 46rem;
     text-align: left;
   }
 
-  .process__stage {
+  .people__role {
     display: grid;
     grid-template-columns: 3.15rem minmax(0, 1fr);
     grid-template-areas:
@@ -57,19 +57,19 @@
     align-items: center;
   }
 
-  .process__mark {
+  .people__mark {
     grid-area: mark;
     width: 3.15rem;
     height: 3.15rem;
     margin-bottom: 0;
   }
 
-  .process__stage h2 {
+  .people__role h2 {
     grid-area: title;
     margin-bottom: 0;
   }
 
-  .process__stage p {
+  .people__role p {
     grid-area: body;
     margin-top: 0.95rem;
   }

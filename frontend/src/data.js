@@ -124,6 +124,14 @@ mwotajiLooks.women.bottoms = {
       front: "/work/mwotaji/women/bottoms/01-front.jpg",
       back: "/work/mwotaji/women/bottoms/01-back.jpg",
     },
+    {
+      front: "/work/mwotaji/women/bottoms/02-front.jpg",
+      back: "/work/mwotaji/women/bottoms/02-back.jpg",
+    },
+    {
+      front: "/work/mwotaji/women/bottoms/03-front.jpg",
+      back: "/work/mwotaji/women/bottoms/03-back.jpg",
+    },
   ],
 };
 mwotajiLooks.men.tops = {
@@ -154,6 +162,10 @@ mwotajiLooks.men.bottoms = {
       front: "/work/mwotaji/men/bottoms/02-front.jpg",
       back: "/work/mwotaji/men/bottoms/02-back.jpg",
     },
+    {
+      front: "/work/mwotaji/men/bottoms/03-front.jpg",
+      back: "/work/mwotaji/men/bottoms/03-back.jpg",
+    },
   ],
 };
 mwotajiLooks.shared.hoodies = {
@@ -166,17 +178,23 @@ mwotajiLooks.shared.hoodies = {
     {
       front: "/work/mwotaji/hoodies/02-front.jpg",
     },
+    {
+      front: "/work/mwotaji/hoodies/03-front.jpg",
+      back: "/work/mwotaji/hoodies/03-back.jpg",
+    },
   ],
 };
 mwotajiLooks.shared.sweatshirts = {
   cover: "/work/mwotaji/sweatshirts/cover.jpg",
   items: [
     {
-      front: "/work/mwotaji/sweatshirts/01-front.jpg",
-      back: "/work/mwotaji/sweatshirts/01-back.jpg",
+      front: "/work/mwotaji/sweatshirts/02-front.jpg",
     },
     {
-      front: "/work/mwotaji/sweatshirts/02-front.jpg",
+      front: "/work/mwotaji/sweatshirts/03-front.jpg",
+    },
+    {
+      front: "/work/mwotaji/sweatshirts/04-front.jpg",
     },
   ],
 };

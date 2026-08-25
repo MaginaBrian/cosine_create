@@ -1,56 +1,61 @@
-import "./Studio.css";
+import "./Essay.css";
+import "./People.css";
+import {
+  MarkHead,
+  MarkEyes,
+  MarkEar,
+  MarkHands,
+  MarkSpine,
+} from "../components/Marks";
 
-const PEOPLE = [
+const ROLES = [
   {
-    id: "01",
-    name: "Pattern",
-    body: "The silhouette is solved on the table — grain, ease, construction — before a line is set.",
+    id: "head",
+    title: "The Head",
+    Mark: MarkHead,
+    body: "This is where it started. Three years in, but the role has always been about seeing the whole shape of a project before it begins, sourcing and buying, creative direction, pricing, supply chain and logistics that make an idea actually deliverable. Knows fabrics across garment types well enough to know what\u2019s possible before a client hears \u201cno.\u201d Works across athleisure, casual, sportswear, women\u2019s and men\u2019s wear, and sits in on the sampling conversation alongside The Ear and The Spine, because the shape of a project doesn\u2019t stop being the founder\u2019s problem once design starts.",
   },
   {
-    id: "02",
-    name: "Sample",
-    body: "Toiles, comments and revisions happen in the open. Trust is built in the sample room.",
+    id: "eyes",
+    title: "The Eyes",
+    Mark: MarkEyes,
+    body: "Eight years in operations between them, watching over the process so nothing slips between stages. ISO-certified, with a working command of operational efficiency, strategy, sustainability and partnership. The ones who keep a client relationship steady and keep the standard defensible when it\u2019s questioned. Alongside The Spine, they oversee production timelines and floor supervision, making sure what\u2019s promised at the start of a project is what actually arrives at the end.",
   },
   {
-    id: "03",
-    name: "Production",
-    body: "Cut, sew and finish around the approved sample. Quantity does not change the standard.",
+    id: "ear",
+    title: "The Ear",
+    Mark: MarkEar,
+    body: "Nine years in the room listening to what a client means before it becomes a garment. Trained across fashion design and pattern making, with the technical range to take a brief from sketch to tech pack \u2014 2D and 3D design, Illustrator, print and finishing and knowledge that stretches as far as sports shoe design. Comfortable across athleisure, streetwear, loungewear, casual and sportswear. Alongside The Head and The Spine, they carry the sampling conversation with clients through to fit and revision.",
   },
   {
-    id: "04",
-    name: "Quality",
-    body: "Measure, press and inspect against what was signed off. Finishing is part of the product.",
+    id: "hands",
+    title: "The Hands",
+    Mark: MarkHands,
+    body: "A decade of making, shared across the floor. Stitching and sample making across the full range, athleisure, casual, sportswear, tailoring, technical garments, women\u2019s and men\u2019s wear. The kind of range that comes from years of being handed almost anything and being expected to build it properly. Hand-finishing, working from a tech pack independently and mentoring newer tailors coming up through the floor.",
+  },
+  {
+    id: "spine",
+    title: "The Spine",
+    Mark: MarkSpine,
+    body: "Thirteen years of holding a garment together, pattern to finished piece. Pattern making, cutting, grading, stitching and quality control all sit within this team, with the range to move between casual wear and technical tailoring \u2014 suits, structured menswear, womenswear, and technical garments that need more precision than a standard cut allows. Branding is folded in too, so the finish carries the client\u2019s identity as much as the construction does. Alongside The Eyes, they keep production on schedule and the floor running.",
   },
 ];
 
 export default function People() {
   return (
-    <>
-      <header className="page-head">
-        <div className="container">
-          <p className="eyebrow">People</p>
-          <h1>The hands behind the work.</h1>
-          <p className="page-head__lede">
-            A small studio, organised around the path a product actually takes. Roles overlap. The project does not get handed off.
-          </p>
-        </div>
-      </header>
-
-      <section className="section">
-        <div className="container">
-          <ol className="studio-list">
-            {PEOPLE.map((p) => (
-              <li key={p.id}>
-                <p className="eyebrow">{p.id}</p>
-                <div>
-                  <h2>{p.name}</h2>
-                  <p>{p.body}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-    </>
+    <article className="essay people">
+      <h1>People</h1>
+      <div className="people__roles">
+        {ROLES.map(({ id, title, Mark, body }) => (
+          <section key={id} className="people__role">
+            <div className="people__mark">
+              <Mark />
+            </div>
+            <h2>{title}</h2>
+            <p>{body}</p>
+          </section>
+        ))}
+      </div>
+    </article>
   );
 }
