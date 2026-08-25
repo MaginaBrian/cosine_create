@@ -27,6 +27,10 @@
   transition: filter 0.45s ease, transform 0.6s ease;
 }
 
+.work-card img.is-portrait {
+  object-position: center 18%;
+}
+
 .work-card:hover img,
 .work-card:focus-visible img {
   filter: grayscale(0) contrast(1.02);
@@ -59,6 +63,17 @@
 .work-card:focus-visible .work-card__name {
   opacity: 1;
   transform: translateY(0);
+}
+
+.work-card--text {
+  border: 1px solid var(--line);
+  background: var(--black);
+}
+
+.work-card--text .work-card__name {
+  opacity: 1;
+  transform: none;
+  text-shadow: none;
 }
 
 @media (max-width: 720px) {

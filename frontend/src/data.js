@@ -73,62 +73,192 @@ export const SERVICES = [
   },
 ];
 
+export const CLOTHING_CATEGORIES = [
+  { id: "bottoms", label: "Bottoms" },
+  { id: "tops", label: "Tops" },
+];
+
+export const SHARED_CATEGORIES = [
+  { id: "hoodies", label: "Hoodies" },
+  { id: "sweatshirts", label: "Sweatshirts" },
+];
+
+function emptyCategory() {
+  return { cover: null, items: [] };
+}
+
+function emptyLooks() {
+  const cats = () => ({
+    bottoms: emptyCategory(),
+    tops: emptyCategory(),
+  });
+  return {
+    men: cats(),
+    women: cats(),
+    shared: { hoodies: emptyCategory(), sweatshirts: emptyCategory() },
+  };
+}
+
+const mwotajiLooks = emptyLooks();
+mwotajiLooks.women.tops = {
+  cover: "/work/mwotaji/women/tops/cover.jpg",
+  items: [
+    {
+      front: "/work/mwotaji/women/tops/01-front.jpg",
+      back: "/work/mwotaji/women/tops/01-back.jpg",
+    },
+    {
+      front: "/work/mwotaji/women/tops/02-front.jpg",
+      back: "/work/mwotaji/women/tops/02-back.jpg",
+    },
+    {
+      front: "/work/mwotaji/women/tops/03-front.jpg",
+      back: "/work/mwotaji/women/tops/03-back.jpg",
+    },
+  ],
+};
+mwotajiLooks.women.bottoms = {
+  cover: "/work/mwotaji/women/bottoms/cover.jpg",
+  items: [
+    {
+      front: "/work/mwotaji/women/bottoms/01-front.jpg",
+      back: "/work/mwotaji/women/bottoms/01-back.jpg",
+    },
+  ],
+};
+mwotajiLooks.men.tops = {
+  cover: "/work/mwotaji/men/tops/cover.jpg",
+  items: [
+    {
+      front: "/work/mwotaji/men/tops/01-front.jpg",
+      back: "/work/mwotaji/men/tops/01-back.jpg",
+    },
+    {
+      front: "/work/mwotaji/men/tops/02-front.jpg",
+      back: "/work/mwotaji/men/tops/02-back.jpg",
+    },
+    {
+      front: "/work/mwotaji/men/tops/03-front.jpg",
+      back: "/work/mwotaji/men/tops/03-back.jpg",
+    },
+  ],
+};
+mwotajiLooks.men.bottoms = {
+  cover: "/work/mwotaji/men/bottoms/cover.jpg",
+  items: [
+    {
+      front: "/work/mwotaji/men/bottoms/01-front.jpg",
+      back: "/work/mwotaji/men/bottoms/01-back.jpg",
+    },
+    {
+      front: "/work/mwotaji/men/bottoms/02-front.jpg",
+      back: "/work/mwotaji/men/bottoms/02-back.jpg",
+    },
+  ],
+};
+mwotajiLooks.shared.hoodies = {
+  cover: "/work/mwotaji/hoodies/cover.jpg",
+  items: [
+    {
+      front: "/work/mwotaji/hoodies/01-front.jpg",
+      back: "/work/mwotaji/hoodies/01-back.jpg",
+    },
+    {
+      front: "/work/mwotaji/hoodies/02-front.jpg",
+    },
+  ],
+};
+mwotajiLooks.shared.sweatshirts = {
+  cover: "/work/mwotaji/sweatshirts/cover.jpg",
+  items: [
+    {
+      front: "/work/mwotaji/sweatshirts/01-front.jpg",
+      back: "/work/mwotaji/sweatshirts/01-back.jpg",
+    },
+    {
+      front: "/work/mwotaji/sweatshirts/02-front.jpg",
+    },
+  ],
+};
+
 export const PROJECTS = [
   {
+    slug: "mwotaji",
+    name: "Essential Collection",
+    client: "MWOTAJI",
+    hook: "Essential Collection.",
+    credit: "Work done for MWOTAJI",
+    gallery: "https://envisionmedia33.pixieset.com/mwotajiessentialcollection/",
+    image: "/work/mwotaji/cover.jpg",
+    imageFit: "portrait",
+    hero: "/work/mwotaji/hero.jpg",
+    looks: mwotajiLooks,
+  },
+  {
+    slug: "atelier",
     name: "Atelier Tee",
     client: "Atelier",
-    stage: "Sampling",
-    qty: "48 pcs",
-    year: "2026",
+    hook: "First sample to a run under fifty.",
     image: "/work/atelier.jpg",
-    note: "Three fabric options sourced. Fit sample turned in twelve days, then a first run under fifty.",
+    looks: emptyLooks(),
   },
   {
+    slug: "northline",
     name: "Northline Shell",
     client: "Northline",
-    stage: "Sourcing",
-    qty: "120 pcs",
-    year: "2026",
+    hook: "A first production under 150 units.",
     image: "/work/northline.jpg",
-    note: "Membrane and lining paired for weather, hand and cost — a first production under 150 units.",
+    looks: emptyLooks(),
   },
   {
+    slug: "harbour",
     name: "Harbour Tote",
     client: "Harbour",
-    stage: "Production",
-    qty: "200 pcs",
-    year: "2025",
+    hook: "Construction locked in sample, then a clean production run.",
     image: "/work/harbour.jpg",
-    note: "Canvas sourced, hardware specified, construction locked in sample, then a clean production run.",
+    looks: emptyLooks(),
   },
   {
+    slug: "field-notes",
     name: "Field Notes Uniform",
     client: "Field Notes",
-    stage: "Distribution",
-    qty: "80 pcs",
-    year: "2026",
+    hook: "Spec to packed delivery, one QC standard.",
     image: "/work/field.jpg",
-    note: "Spec to packed delivery for two locations. Same pattern, two size runs, one QC standard.",
+    looks: emptyLooks(),
   },
   {
+    slug: "solace",
     name: "Solace Knit",
     client: "Solace",
-    stage: "Sampling",
-    qty: "36 pcs",
-    year: "2025",
+    hook: "A small knit run to prove the silhouette.",
     image: "/work/solace.jpg",
-    note: "Yarn and gauge decided in sampling. A small knit run to prove the silhouette before scaling.",
+    looks: emptyLooks(),
   },
   {
+    slug: "kora",
     name: "Kora Goods",
     client: "Kora",
-    stage: "Produce",
-    qty: "90 pcs",
-    year: "2026",
+    hook: "Edge finish resolved in sample, then a low-quantity production.",
     image: "/work/kora.jpg",
-    note: "Leather alternative sourced, edge finish resolved in sample, then a low-quantity production.",
+    looks: emptyLooks(),
   },
 ];
+
+export function getProject(slug) {
+  return PROJECTS.find((p) => p.slug === slug);
+}
+
+export function getLook(slug, gender, categoryId) {
+  const project = getProject(slug);
+  const category =
+    CLOTHING_CATEGORIES.find((c) => c.id === categoryId) ||
+    SHARED_CATEGORIES.find((c) => c.id === categoryId);
+  const look = gender
+    ? project?.looks?.[gender]?.[categoryId]
+    : project?.looks?.shared?.[categoryId];
+  if (!project || !category || !look) return null;
+  return { project, gender, category, look };
+}
 
 export const ORDERS = [
   {

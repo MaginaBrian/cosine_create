@@ -4,8 +4,19 @@ export default function WorkGrid({ projects }) {
   return (
     <div className="work-grid">
       {projects.map((p) => (
-        <a href="#/work" className="work-card" key={p.name}>
-          <img src={p.image} alt={`${p.client} — ${p.name}`} />
+        <a
+          href={`#/work/${p.slug}`}
+          className={`work-card${p.image ? "" : " work-card--text"}`}
+          key={p.slug}
+          aria-label={`${p.client} — ${p.name}`}
+        >
+          {p.image ? (
+            <img
+              src={p.image}
+              alt=""
+              className={p.imageFit === "portrait" ? "is-portrait" : undefined}
+            />
+          ) : null}
           <span className="work-card__name">{p.client}</span>
         </a>
       ))}

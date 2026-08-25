@@ -10,7 +10,7 @@ const LINKS = [
 ];
 
 function isCurrent(path, match) {
-  if (match === "/") return path === "/" || path === "/work";
+  if (match === "/") return path === "/" || path === "/work" || path.startsWith("/work/");
   return path === match;
 }
 

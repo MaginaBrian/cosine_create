@@ -9,6 +9,8 @@ import Awards from "./pages/Awards";
 import Services from "./pages/Services";
 import Process from "./pages/Process";
 import Work from "./pages/Work";
+import Project from "./pages/Project";
+import Lookbook from "./pages/Lookbook";
 import Start from "./pages/Start";
 import Portal from "./pages/Portal";
 
@@ -50,7 +52,20 @@ export default function App() {
   };
 
   let page;
-  switch (path) {
+  const workParts = path.split("/").filter(Boolean);
+
+  if (workParts[0] === "work" && workParts[1]) {
+    const slug = decodeURIComponent(workParts[1]);
+    const gender = workParts[2] === "men" || workParts[2] === "women" ? workParts[2] : null;
+    const categoryId = gender ? workParts[3] : workParts[2];
+
+    if (categoryId) {
+      page = <Lookbook slug={slug} gender={gender} categoryId={categoryId} />;
+    } else {
+      page = <Project slug={slug} />;
+    }
+  } else {
+    switch (path) {
     case "/about":
       page = <About />;
       break;
@@ -77,6 +92,7 @@ export default function App() {
       break;
     default:
       page = <Home />;
+    }
   }
 
   return (
