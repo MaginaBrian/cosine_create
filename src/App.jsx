@@ -3,6 +3,9 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
 import Home from "./pages/Home";
+import About from "./pages/About";
+import People from "./pages/People";
+import Awards from "./pages/Awards";
 import Services from "./pages/Services";
 import Process from "./pages/Process";
 import Work from "./pages/Work";
@@ -48,6 +51,15 @@ export default function App() {
 
   let page;
   switch (path) {
+    case "/about":
+      page = <About />;
+      break;
+    case "/people":
+      page = <People />;
+      break;
+    case "/awards":
+      page = <Awards />;
+      break;
     case "/services":
       page = <Services />;
       break;
@@ -72,7 +84,7 @@ export default function App() {
       <a className="skip" href="#main">
         Skip to content
       </a>
-      <Navbar path={path} user={user} />
+      <Navbar path={path} />
       <main id="main">{page}</main>
       <Footer />
       <BackToTop />

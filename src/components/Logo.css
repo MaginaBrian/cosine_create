@@ -1,6 +1,6 @@
 .wordmark {
   font-family: var(--font);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(1.2rem, 2.4vw, 1.85rem);
   letter-spacing: -0.045em;
   line-height: 1;

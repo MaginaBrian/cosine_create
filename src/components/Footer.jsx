@@ -29,10 +29,10 @@ export default function Footer() {
           </div>
           <div className="footer__col">
             <p className="eyebrow">Explore</p>
-            <a href="#/services" className="link">Services</a>
-            <a href="#/process" className="link">Process</a>
-            <a href="#/work" className="link">Work</a>
-            <a href="#/portal" className="link">Client portal</a>
+            <a href="#/" className="link">Work</a>
+            <a href="#/about" className="link">About</a>
+            <a href="#/people" className="link">People</a>
+            <a href="#/awards" className="link">Awards</a>
           </div>
           <div className="footer__col">
             <p className="eyebrow">Contact</p>

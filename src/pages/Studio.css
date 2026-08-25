@@ -1,0 +1,35 @@
+.studio-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.studio-list li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 1.5rem;
+  padding-block: clamp(1.75rem, 4vw, 2.75rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.studio-list li:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.studio-list h2 {
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.7rem;
+}
+
+.studio-list p:not(.eyebrow) {
+  max-width: 58ch;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .studio-list li {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}

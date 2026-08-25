@@ -4,9 +4,9 @@ import "./Navbar.css";
 
 const LINKS = [
   { href: "#/", label: "Work", match: "/" },
-  { href: "#/services", label: "Services", match: "/services" },
-  { href: "#/process", label: "Process", match: "/process" },
-  { href: "#/start", label: "Start", match: "/start" },
+  { href: "#/about", label: "About", match: "/about" },
+  { href: "#/people", label: "People", match: "/people" },
+  { href: "#/awards", label: "Awards", match: "/awards" },
 ];
 
 function isCurrent(path, match) {
@@ -14,12 +14,7 @@ function isCurrent(path, match) {
   return path === match;
 }
 
-function scrollToContact(e) {
-  e.preventDefault();
-  document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-}
-
-export default function Navbar({ path, user }) {
+export default function Navbar({ path }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -38,18 +33,12 @@ export default function Navbar({ path, user }) {
               <li key={l.match}>
                 <a
                   href={l.href}
-                  className="link"
                   aria-current={isCurrent(path, l.match) ? "page" : undefined}
                 >
                   {l.label}
                 </a>
               </li>
             ))}
-            <li>
-              <a href="#contact" className="link" onClick={scrollToContact}>
-                Contact
-              </a>
-            </li>
           </ul>
         </nav>
 
@@ -95,22 +84,6 @@ export default function Navbar({ path, user }) {
                 </a>
               </li>
             ))}
-            <li>
-              <a
-                href="#contact"
-                onClick={(e) => {
-                  setOpen(false);
-                  scrollToContact(e);
-                }}
-              >
-                Contact
-              </a>
-            </li>
-            <li>
-              <a href="#/portal" onClick={() => setOpen(false)}>
-                {user ? "Portal" : "Client portal"}
-              </a>
-            </li>
           </ul>
         </nav>
       </div>
