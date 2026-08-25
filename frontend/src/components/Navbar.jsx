@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Logo from "./Logo";
 import "./Navbar.css";
 
@@ -9,13 +9,22 @@ const LINKS = [
   { href: "#/people", label: "People", match: "/people" },
 ];
 
+const SECRET_CLICKS = 3;
+const SECRET_WINDOW_MS = 2000;
+
 function isCurrent(path, match) {
   if (match === "/") return path === "/" || path === "/work" || path.startsWith("/work/");
   return path === match;
 }
 
-export default function Navbar({ path }) {
+function accountHref(user) {
+  if (!user) return "#/";
+  return user.role === "admin" ? "#/admin" : "#/studio";
+}
+
+export default function Navbar({ path, user, onLogout }) {
   const [open, setOpen] = useState(false);
+  const secret = useRef({ count: 0, timer: null });
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -23,6 +32,34 @@ export default function Navbar({ path }) {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  useEffect(() => {
+    return () => {
+      if (secret.current.timer) clearTimeout(secret.current.timer);
+    };
+  }, []);
+
+  const onBrandClick = (e) => {
+    setOpen(false);
+    const state = secret.current;
+    if (state.timer) clearTimeout(state.timer);
+    state.count += 1;
+
+    if (state.count >= SECRET_CLICKS) {
+      e.preventDefault();
+      state.count = 0;
+      window.location.hash = user
+        ? user.role === "admin"
+          ? "#/admin"
+          : "#/studio"
+        : "#/login";
+      return;
+    }
+
+    state.timer = setTimeout(() => {
+      state.count = 0;
+    }, SECRET_WINDOW_MS);
+  };
 
   return (
     <header className="nav">
@@ -42,7 +79,12 @@ export default function Navbar({ path }) {
           </ul>
         </nav>
 
-        <a href="#/" className="nav__brand" aria-label="Cosine Create — home" onClick={() => setOpen(false)}>
+        <a
+          href="#/"
+          className="nav__brand"
+          aria-label="Cosine Create — home"
+          onClick={onBrandClick}
+        >
           <Logo />
         </a>
 
@@ -57,6 +99,20 @@ export default function Navbar({ path }) {
               <path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.63.07 4.81 0 3.19-.01 3.56-.07 4.81-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07-3.2 0-3.58 0-4.83-.07-3.26-.15-4.77-1.7-4.92-4.92-.06-1.25-.07-1.62-.07-4.81 0-3.18.01-3.56.07-4.81C2.35 3.96 3.87 2.42 7.1 2.27 8.35 2.2 8.8 2.2 12 2.2zm0 5.05a4.75 4.75 0 100 9.5 4.75 4.75 0 000-9.5zm0 7.83a3.08 3.08 0 110-6.16 3.08 3.08 0 010 6.16zm6.04-8.02a1.11 1.11 0 100-2.22 1.11 1.11 0 000 2.22z" />
             </svg>
           </a>
+          {user ? (
+            <>
+              <a
+                href={accountHref(user)}
+                className="nav__account"
+                aria-current={path === "/studio" || path === "/admin" || path === "/account" ? "page" : undefined}
+              >
+                {user.brand || user.name}
+              </a>
+              <button type="button" className="nav__out" onClick={onLogout}>
+                Sign out
+              </button>
+            </>
+          ) : null}
         </div>
 
         <button
@@ -84,6 +140,27 @@ export default function Navbar({ path }) {
                 </a>
               </li>
             ))}
+            {user ? (
+              <>
+                <li>
+                  <a href={accountHref(user)} onClick={() => setOpen(false)}>
+                    {user.brand || user.name}
+                  </a>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    className="nav__mobile-out"
+                    onClick={() => {
+                      setOpen(false);
+                      onLogout();
+                    }}
+                  >
+                    Sign out
+                  </button>
+                </li>
+              </>
+            ) : null}
           </ul>
         </nav>
       </div>

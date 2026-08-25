@@ -12,7 +12,11 @@ import Work from "./pages/Work";
 import Project from "./pages/Project";
 import Lookbook from "./pages/Lookbook";
 import Start from "./pages/Start";
-import Portal from "./pages/Portal";
+import Login from "./pages/Login";
+import Studio from "./pages/Studio";
+import Admin from "./pages/Admin";
+import Guard from "./pages/Guard";
+import { clearSession, fetchMe, getStoredUser, getToken, setSession } from "./api";
 
 function getPath() {
   const hash = window.location.hash.replace(/^#/, "") || "/";
@@ -21,13 +25,7 @@ function getPath() {
 
 export default function App() {
   const [path, setPath] = useState(getPath);
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("cc-user")) || null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState(() => (getToken() ? getStoredUser() : null));
 
   useEffect(() => {
     const onHash = () => {
@@ -41,14 +39,27 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
+  useEffect(() => {
+    if (!getToken()) return;
+    fetchMe()
+      .then((data) => {
+        setSession(getToken(), data.user);
+        setUser(data.user);
+      })
+      .catch(() => {
+        clearSession();
+        setUser(null);
+      });
+  }, []);
+
   const login = (next) => {
-    localStorage.setItem("cc-user", JSON.stringify(next));
     setUser(next);
   };
 
   const logout = () => {
-    localStorage.removeItem("cc-user");
+    clearSession();
     setUser(null);
+    window.location.hash = "#/";
   };
 
   let page;
@@ -66,32 +77,48 @@ export default function App() {
     }
   } else {
     switch (path) {
-    case "/about":
-      page = <About />;
-      break;
-    case "/people":
-      page = <People />;
-      break;
-    case "/awards":
-      page = <Awards />;
-      break;
-    case "/services":
-      page = <Services />;
-      break;
-    case "/process":
-      page = <Process />;
-      break;
-    case "/work":
-      page = <Work />;
-      break;
-    case "/start":
-      page = <Start />;
-      break;
-    case "/portal":
-      page = <Portal user={user} onLogin={login} onLogout={logout} />;
-      break;
-    default:
-      page = <Home />;
+      case "/about":
+        page = <About />;
+        break;
+      case "/people":
+        page = <People />;
+        break;
+      case "/awards":
+        page = <Awards />;
+        break;
+      case "/services":
+        page = <Services />;
+        break;
+      case "/process":
+        page = <Process />;
+        break;
+      case "/work":
+        page = <Work />;
+        break;
+      case "/start":
+        page = <Start />;
+        break;
+      case "/portal":
+      case "/login":
+        page = <Login user={user} onLogin={login} />;
+        break;
+      case "/studio":
+      case "/account":
+        page = (
+          <Guard user={user} role="client">
+            <Studio user={user} onLogout={logout} />
+          </Guard>
+        );
+        break;
+      case "/admin":
+        page = (
+          <Guard user={user} role="admin">
+            <Admin user={user} onLogout={logout} />
+          </Guard>
+        );
+        break;
+      default:
+        page = <Home />;
     }
   }
 
@@ -100,7 +127,7 @@ export default function App() {
       <a className="skip" href="#main">
         Skip to content
       </a>
-      <Navbar path={path} />
+      <Navbar path={path} user={user} onLogout={logout} />
       <main id="main">{page}</main>
       <Footer />
       <BackToTop />

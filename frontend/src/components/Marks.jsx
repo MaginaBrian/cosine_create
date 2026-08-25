@@ -5,7 +5,7 @@ const MARK = {
   strokeWidth: "1.35",
   strokeLinecap: "butt",
   strokeLinejoin: "miter",
-  strokeMiterlimit: "2",
+  strokeMiterlimit: "2.5",
   "aria-hidden": true,
   focusable: "false",
 };
@@ -18,7 +18,7 @@ export function MarkHead() {
   return (
     <Mark>
       <circle cx="24" cy="24" r="13.5" />
-      <line x1="14.5" y1="18" x2="33.5" y2="18" />
+      <line x1="12.8" y1="16.5" x2="35.2" y2="16.5" />
     </Mark>
   );
 }
@@ -26,8 +26,8 @@ export function MarkHead() {
 export function MarkEyes() {
   return (
     <Mark>
-      <path d="M5.5 24 L14.25 19.5 L23 24 L14.25 28.5 Z" />
-      <path d="M25 24 L33.75 19.5 L42.5 24 L33.75 28.5 Z" />
+      <path d="M5.5 24 L14 19.25 L22.5 24 L14 28.75 Z" />
+      <path d="M25.5 24 L34 19.25 L42.5 24 L34 28.75 Z" />
     </Mark>
   );
 }
@@ -35,7 +35,7 @@ export function MarkEyes() {
 export function MarkEar() {
   return (
     <Mark>
-      <path d="M32.5 9.5 A14.5 14.5 0 1 0 32.5 38.5 A7.5 7.5 0 1 0 32.5 23.5" />
+      <path d="M39 22 A15 15 0 0 1 24 37 A15 15 0 0 1 9 22 A10 10 0 0 1 19 12 A6 6 0 0 1 25 18 A4 4 0 0 1 21 22" />
     </Mark>
   );
 }
@@ -43,8 +43,8 @@ export function MarkEar() {
 export function MarkHands() {
   return (
     <Mark>
-      <path d="M12 36.5 V11.5 H33" />
-      <path d="M36 11.5 V36.5 H15" />
+      <path d="M12 36 V12 H31" />
+      <path d="M36 12 V36 H17" />
     </Mark>
   );
 }
@@ -52,11 +52,11 @@ export function MarkHands() {
 export function MarkSpine() {
   return (
     <Mark>
-      <line x1="18" y1="8" x2="30" y2="8" />
-      <line x1="18" y1="16" x2="30" y2="16" />
-      <line x1="18" y1="24" x2="30" y2="24" />
-      <line x1="18" y1="32" x2="30" y2="32" />
-      <line x1="18" y1="40" x2="30" y2="40" />
+      <line x1="14" y1="8.5" x2="34" y2="8.5" />
+      <line x1="14" y1="16.25" x2="34" y2="16.25" />
+      <line x1="14" y1="24" x2="34" y2="24" />
+      <line x1="14" y1="31.75" x2="34" y2="31.75" />
+      <line x1="14" y1="39.5" x2="34" y2="39.5" />
     </Mark>
   );
 }
@@ -73,8 +73,8 @@ export function MarkDesign() {
 export function MarkSourcing() {
   return (
     <Mark>
-      <path d="M28.5 11.5 A12.5 12.5 0 1 0 28.5 36.5" />
-      <path d="M19.5 11.5 A12.5 12.5 0 1 1 19.5 36.5" />
+      <circle cx="17" cy="24" r="11.5" />
+      <circle cx="31" cy="24" r="11.5" />
     </Mark>
   );
 }
@@ -91,9 +91,9 @@ export function MarkSample() {
 export function MarkProduction() {
   return (
     <Mark>
-      <line x1="14" y1="10" x2="14" y2="38" />
+      <line x1="13.5" y1="10" x2="13.5" y2="38" />
       <line x1="24" y1="10" x2="24" y2="38" />
-      <line x1="34" y1="10" x2="34" y2="38" />
+      <line x1="34.5" y1="10" x2="34.5" y2="38" />
     </Mark>
   );
 }
@@ -101,10 +101,10 @@ export function MarkProduction() {
 export function MarkQuality() {
   return (
     <Mark>
-      <path d="M10.5 18.5 V10.5 H18.5" />
-      <path d="M29.5 10.5 H37.5 V18.5" />
-      <path d="M37.5 29.5 V37.5 H29.5" />
-      <path d="M18.5 37.5 H10.5 V29.5" />
+      <path d="M10.5 20.5 V10.5 H20.5" />
+      <path d="M27.5 10.5 H37.5 V20.5" />
+      <path d="M37.5 27.5 V37.5 H27.5" />
+      <path d="M20.5 37.5 H10.5 V27.5" />
     </Mark>
   );
 }
@@ -112,7 +112,7 @@ export function MarkQuality() {
 export function MarkDispatch() {
   return (
     <Mark>
-      <path d="M36.5 11.5 H11.5 V36.5 H36.5" />
+      <path d="M38.5 11.5 H13.5 V36.5 H38.5" />
     </Mark>
   );
 }

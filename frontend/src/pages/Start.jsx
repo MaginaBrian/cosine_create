@@ -47,8 +47,8 @@ export default function Start() {
               <p>
                 We’ll review what you’ve sent and come back with a clear next step — sourcing, sampling or a production plan. Same care, regardless of quantity.
               </p>
-              <a className="btn" href="#/portal">
-                Open the client portal
+              <a className="btn" href="#/">
+                Back to work
               </a>
             </div>
           ) : (

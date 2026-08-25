@@ -16,6 +16,7 @@
 }
 
 .process__mark {
+  flex-shrink: 0;
   width: clamp(2.75rem, 7vw, 3.15rem);
   height: clamp(2.75rem, 7vw, 3.15rem);
   margin-bottom: 0.9rem;

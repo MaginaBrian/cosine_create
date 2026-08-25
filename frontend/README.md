@@ -6,9 +6,11 @@ colour on hover.
 
 ## Run it
 
+Vite proxies `/api` to Flask on `http://127.0.0.1:5000`.
+
 ```bash
 npm install
-npm run dev       # http://localhost:5173
+npm run dev       # http://localhost:5173 (or 5174 if 5173 is taken)
 npm run build     # production build -> dist/
 ```
 
