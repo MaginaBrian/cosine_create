@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createInquiry } from "../api";
 import { STAGES } from "../data";
 import "./Start.css";
 
@@ -15,15 +16,34 @@ const EMPTY = {
 export default function Start() {
   const [form, setForm] = useState(EMPTY);
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   const onChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    setSent(true);
+    setError("");
+    setBusy(true);
+    try {
+      await createInquiry({
+        name: form.name,
+        brand: form.brand,
+        email: form.email,
+        making: form.product,
+        quantity: form.qty,
+        stage: form.stage,
+        notes: form.notes,
+      });
+      setSent(true);
+    } catch (err) {
+      setError(err.message || "Could not send the project.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -74,7 +94,6 @@ export default function Start() {
                     <select id="product" name="product" value={form.product} onChange={onChange}>
                       <option>Apparel</option>
                       <option>Accessories</option>
-                      <option>Home</option>
                       <option>Other</option>
                     </select>
                   </div>
@@ -95,6 +114,7 @@ export default function Start() {
                     <option value="idea">I have an idea</option>
                     <option value="sample">I have a sample</option>
                     <option value="produce">Ready to produce</option>
+                    <option value="buy">Ready to buy</option>
                     <option value="reorder">Reorder / scale</option>
                   </select>
                 </div>
@@ -108,8 +128,9 @@ export default function Start() {
                     placeholder="Fabric, silhouette, timeline, anything that matters."
                   />
                 </div>
-                <button className="btn" type="submit">
-                  Send project
+                {error ? <p className="start__error">{error}</p> : null}
+                <button className="btn" type="submit" disabled={busy}>
+                  {busy ? "Sending…" : "Send project"}
                 </button>
               </form>
 

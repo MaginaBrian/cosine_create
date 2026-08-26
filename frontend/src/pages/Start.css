@@ -67,6 +67,16 @@
   font-size: 0.95rem;
 }
 
+.start__error {
+  color: var(--muted);
+  margin: 0;
+}
+
+.start__form .btn:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 @media (max-width: 800px) {
   .start {
     grid-template-columns: 1fr;

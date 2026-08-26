@@ -7,7 +7,7 @@ import json
 
 from completion_pdf import build_completion_pdf
 from config import Config
-from models import Order, Product, User, db
+from models import Inquiry, Order, Product, User, db
 from security import check_password, make_token, require_auth, require_role
 
 ADMIN_MOVE_STAGES = ("produce", "distribute")
@@ -29,6 +29,8 @@ GARMENT_IDS = {
     "vest",
 }
 HEIGHTS = {"Short", "Regular", "Tall"}
+INQUIRY_MAKING = {"Apparel", "Accessories", "Other"}
+INQUIRY_STAGES = {"idea", "sample", "produce", "buy", "reorder"}
 
 
 def canonical_stage(value):
@@ -273,6 +275,46 @@ def register_routes(app):
             as_attachment=True,
             download_name=filename,
         )
+
+    @app.post("/api/inquiries")
+    def create_inquiry():
+        body = request.get_json(silent=True) or {}
+        name = (body.get("name") or "").strip()
+        brand = (body.get("brand") or "").strip()
+        email = (body.get("email") or "").strip().lower()
+        making = (body.get("making") or body.get("product") or "Apparel").strip() or "Apparel"
+        quantity = (body.get("quantity") or body.get("qty") or "").strip() or None
+        stage = (body.get("stage") or "").strip() or "idea"
+        notes = (body.get("notes") or "").strip() or None
+
+        if not name or not brand or not email:
+            return jsonify({"error": "name, brand, and email are required"}), 400
+        if making not in INQUIRY_MAKING:
+            return jsonify({"error": "What you are making must be Apparel, Accessories or Other"}), 400
+        if stage not in INQUIRY_STAGES:
+            return jsonify({"error": "Unknown project stage"}), 400
+        if quantity and len(quantity) > 80:
+            return jsonify({"error": "quantity is too long"}), 400
+
+        inquiry = Inquiry(
+            contact_name=name,
+            brand=brand,
+            email=email,
+            making=making,
+            quantity=quantity,
+            stage=stage,
+            notes=notes,
+        )
+        db.session.add(inquiry)
+        db.session.commit()
+        return jsonify({"inquiry": inquiry.to_public()}), 201
+
+    @app.get("/api/inquiries")
+    @require_auth
+    @require_role("admin")
+    def list_inquiries():
+        rows = Inquiry.query.order_by(Inquiry.created_at.desc()).all()
+        return jsonify({"inquiries": [row.to_public() for row in rows]})
 
 
 app = create_app()

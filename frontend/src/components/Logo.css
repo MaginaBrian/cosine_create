@@ -6,6 +6,7 @@
 
 .brand-lockup {
   display: block;
-  height: 4.15rem;
+  height: 1.85rem;
   width: auto;
+  max-width: min(72vw, 22rem);
 }

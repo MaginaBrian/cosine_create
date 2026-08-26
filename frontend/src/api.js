@@ -68,6 +68,14 @@ export function fetchOrders() {
   return api("/api/orders");
 }
 
+export function createInquiry(payload) {
+  return api("/api/inquiries", { method: "POST", body: payload });
+}
+
+export function fetchInquiries() {
+  return api("/api/inquiries");
+}
+
 export function createOrder(payload) {
   return api("/api/orders", { method: "POST", body: payload });
 }

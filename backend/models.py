@@ -124,3 +124,35 @@ class Order(db.Model):
         if include_user and self.user:
             payload["user"] = self.user.to_public()
         return payload
+
+
+class Inquiry(db.Model):
+    __tablename__ = "inquiries"
+
+    id = db.Column(db.Integer, primary_key=True)
+    contact_name = db.Column(db.String(120), nullable=False)
+    brand = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
+    making = db.Column(db.String(80), nullable=False, default="Apparel")
+    quantity = db.Column(db.String(80), nullable=True)
+    stage = db.Column(db.String(40), nullable=False)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+
+    def to_public(self):
+        created = self.created_at
+        if created and created.tzinfo is None:
+            iso = created.replace(tzinfo=timezone.utc).isoformat()
+        else:
+            iso = created.isoformat() if created else None
+        return {
+            "id": self.id,
+            "contact_name": self.contact_name,
+            "brand": self.brand,
+            "email": self.email,
+            "making": self.making,
+            "quantity": self.quantity,
+            "stage": self.stage,
+            "notes": self.notes,
+            "created_at": iso,
+        }

@@ -51,8 +51,9 @@
 }
 
 .footer__lockup .brand-lockup {
-  height: clamp(4.25rem, 10vw, 6.75rem);
+  height: clamp(1.85rem, 4.5vw, 2.75rem);
   width: auto;
+  max-width: 100%;
 }
 
 .footer__bar {

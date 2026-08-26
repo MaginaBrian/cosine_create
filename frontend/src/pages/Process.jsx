@@ -61,7 +61,7 @@ export default function Process() {
         <p className="eyebrow">The floor</p>
         <h1>
           Process
-          <span>from sketch to carton</span>
+          <span>from sketch to shelf</span>
         </h1>
       </header>
 

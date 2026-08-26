@@ -6,8 +6,8 @@ export default function Logo() {
       className="brand-lockup"
       src="/lockup.png"
       alt=""
-      width="497"
-      height="277"
+      width="2874"
+      height="339"
     />
   );
 }

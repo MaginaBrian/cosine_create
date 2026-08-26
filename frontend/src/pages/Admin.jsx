@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { fetchOrders, updateOrderStage, deleteOrder, downloadBlob } from "../api";
+import { fetchOrders, fetchInquiries, updateOrderStage, deleteOrder, downloadBlob } from "../api";
 import { GARMENTS, formatSizeRun } from "../measurements";
 import "./Portal.css";
 import "./Admin.css";
@@ -8,6 +8,14 @@ const ADMIN_STAGES = [
   { key: "produce", name: "Production" },
   { key: "distribute", name: "Dispatch" },
 ];
+
+const INQUIRY_STAGES = {
+  idea: "I have an idea",
+  sample: "I have a sample",
+  produce: "Ready to produce",
+  buy: "Ready to buy",
+  reorder: "Reorder / scale",
+};
 
 function garmentLabel(order) {
   const match = GARMENTS.find((g) => g.id === order.garment);
@@ -111,6 +119,7 @@ function OrderRows({ orders, savingId, onStageChange, onDelete }) {
 
 export default function Admin({ user, onLogout }) {
   const [orders, setOrders] = useState([]);
+  const [inquiries, setInquiries] = useState([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [savingId, setSavingId] = useState(null);
@@ -120,6 +129,9 @@ export default function Admin({ user, onLogout }) {
   useEffect(() => {
     fetchOrders()
       .then((data) => setOrders(data.orders || []))
+      .catch((err) => setError(err.message));
+    fetchInquiries()
+      .then((data) => setInquiries(data.inquiries || []))
       .catch((err) => setError(err.message));
   }, []);
 
@@ -251,6 +263,49 @@ export default function Admin({ user, onLogout }) {
               ))}
             </div>
           )}
+
+          <div className="admin-leads">
+            <p className="eyebrow">Start a project</p>
+            <h2>Potential customers.</h2>
+            <p className="admin-leads__lede">
+              Anyone who fills in Start a project appears here — name, brand, and where they are.
+            </p>
+            {inquiries.length === 0 ? (
+              <p className="admin-empty">No project enquiries yet.</p>
+            ) : (
+              <div className="admin-table-wrap">
+                <table className="admin-table admin-table--leads">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Who</th>
+                      <th>Brand</th>
+                      <th>Making</th>
+                      <th>Qty</th>
+                      <th>Where they are</th>
+                      <th>The project</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inquiries.map((row) => (
+                      <tr key={row.id}>
+                        <td>{formatDateTime(row.created_at)}</td>
+                        <td>
+                          <strong>{row.contact_name}</strong>
+                          <span>{row.email}</span>
+                        </td>
+                        <td>{row.brand}</td>
+                        <td>{row.making}</td>
+                        <td>{row.quantity || "—"}</td>
+                        <td>{INQUIRY_STAGES[row.stage] || row.stage}</td>
+                        <td>{row.notes || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </>
