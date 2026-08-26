@@ -1,0 +1,135 @@
+.order-panel {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  padding-top: clamp(3rem, 8vw, 5.5rem);
+  padding-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.order-panel__intro {
+  max-width: 42rem;
+  margin-bottom: 2rem;
+}
+
+.order-panel__intro h2 {
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  margin-top: 0.7rem;
+}
+
+.order-panel__intro p:not(.eyebrow) {
+  margin-top: 1rem;
+  color: var(--muted);
+  max-width: 46ch;
+}
+
+.order-panel__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  align-items: flex-start;
+}
+
+.order-panel__form .field,
+.order-panel__form .order-sizes {
+  width: 100%;
+}
+
+.order-panel__garment,
+.order-panel__sex {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.order-panel__sex {
+  color: var(--muted);
+}
+
+.order-size {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: min(100%, 22rem);
+  margin-top: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.order-size__add,
+.order-size__remove {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  align-self: flex-start;
+}
+
+.order-size__add:hover,
+.order-size__remove:hover,
+.order-size__add:focus-visible,
+.order-size__remove:focus-visible {
+  color: var(--white);
+}
+
+.order-sizes__total {
+  margin-top: 0.85rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.order-panel__error,
+.order-panel__ok {
+  font-size: 0.95rem;
+}
+
+.order-panel__error {
+  color: var(--muted);
+}
+
+.order-panel__ok {
+  color: var(--white);
+}
+
+.order-panel__history {
+  margin-top: 3rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+}
+
+.order-panel__history ul {
+  margin-top: 1rem;
+}
+
+.order-panel__history li {
+  display: grid;
+  grid-template-columns: 6rem 1fr auto;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.95rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.order-panel__history span,
+.order-panel__history em {
+  font-size: 0.78rem;
+  font-style: normal;
+  color: var(--muted);
+}
+
+.order-panel__history strong {
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .order-panel__history li {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}

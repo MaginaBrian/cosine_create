@@ -1,38 +1,67 @@
+.people.essay {
+  padding-inline: 0;
+  padding-bottom: 0;
+}
+
+.people h1 {
+  padding-inline: var(--gutter);
+}
+
 .people__roles {
-  max-width: 40rem;
-  margin-inline: auto;
+  text-align: left;
 }
 
 .people__role {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
+  min-height: min(78svh, 38rem);
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .people__role + .people__role {
-  margin-top: clamp(3.5rem, 8vw, 5.75rem);
-  padding-top: clamp(3.5rem, 8vw, 5.75rem);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--line-strong);
 }
 
-.people__mark {
-  flex-shrink: 0;
-  width: clamp(2.75rem, 7vw, 3.15rem);
-  height: clamp(2.75rem, 7vw, 3.15rem);
-  margin-bottom: 0.9rem;
-  color: var(--white);
-}
-
-.people__mark svg {
-  display: block;
+.people__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+  filter: grayscale(1);
+}
+
+.people__role::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.62) 42%,
+    rgba(0, 0, 0, 0.28) 100%
+  );
+}
+
+.people__copy {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+  padding: clamp(5.5rem, 14vw, 9rem) var(--gutter) clamp(2.75rem, 7vw, 4.25rem);
 }
 
 .people__role h2 {
-  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+  font-size: clamp(1.45rem, 3vw, 2rem);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin-bottom: 0.95rem;
 }
 
@@ -40,38 +69,15 @@
   font-size: clamp(1.05rem, 1.65vw, 1.22rem);
   font-weight: 400;
   line-height: 1.65;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 @media (min-width: 721px) {
-  .people__roles {
-    max-width: 46rem;
-    text-align: left;
-  }
-
   .people__role {
-    display: grid;
-    grid-template-columns: 3.15rem minmax(0, 1fr);
-    grid-template-areas:
-      "mark title"
-      ". body";
-    column-gap: 1.45rem;
-    align-items: center;
+    min-height: min(82svh, 44rem);
   }
 
-  .people__mark {
-    grid-area: mark;
-    width: 3.15rem;
-    height: 3.15rem;
-    margin-bottom: 0;
-  }
-
-  .people__role h2 {
-    grid-area: title;
-    margin-bottom: 0;
-  }
-
-  .people__role p {
-    grid-area: body;
-    margin-top: 0.95rem;
+  .people__copy {
+    max-width: 48rem;
   }
 }

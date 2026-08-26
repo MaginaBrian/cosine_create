@@ -1,0 +1,215 @@
+.about {
+  min-height: calc(100svh - var(--nav-h));
+  padding: clamp(3.5rem, 10vw, 7.5rem) var(--gutter) clamp(4.5rem, 12vw, 8rem);
+}
+
+.about__kicker {
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.about__layout {
+  display: grid;
+  gap: clamp(3rem, 8vw, 6rem);
+  align-items: start;
+}
+
+.about__main {
+  max-width: 40rem;
+  text-align: left;
+}
+
+.about__main h1 {
+  font-size: clamp(2.6rem, 7.5vw, 5.4rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.9;
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.about__main h1 span {
+  display: block;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  color: var(--muted);
+}
+
+.about__lead {
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  max-width: 18ch;
+  margin-bottom: 1.5rem;
+}
+
+.about__main p:not(.about__lead) {
+  font-size: clamp(1.05rem, 1.65vw, 1.22rem);
+  font-weight: 400;
+  line-height: 1.65;
+  max-width: 38rem;
+}
+
+.about__main p + p {
+  margin-top: 1.35rem;
+}
+
+.about__points {
+  border-top: 1px solid var(--line-strong);
+}
+
+.about-point {
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.about-point__trigger {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) 1.1rem;
+  gap: 0.85rem;
+  align-items: center;
+  width: 100%;
+  padding: 1.15rem 0;
+  text-align: left;
+}
+
+.about-point__n {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+.about-point__title {
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.about-point__mark {
+  position: relative;
+  width: 0.85rem;
+  height: 0.85rem;
+  justify-self: end;
+}
+
+.about-point__mark::before,
+.about-point__mark::after {
+  content: "";
+  position: absolute;
+  background: var(--white);
+  transition: transform 0.28s var(--ease), opacity 0.28s var(--ease);
+}
+
+.about-point__mark::before {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.about-point__mark::after {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+}
+
+.about-point__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.about-point__panel p {
+  overflow: hidden;
+  min-height: 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--muted);
+  padding-bottom: 0;
+}
+
+.about-point:hover .about-point__panel,
+.about-point:focus-within .about-point__panel,
+.about-point.is-open .about-point__panel {
+  grid-template-rows: 1fr;
+}
+
+.about-point:hover .about-point__panel p,
+.about-point:focus-within .about-point__panel p,
+.about-point.is-open .about-point__panel p {
+  padding-bottom: 1.2rem;
+}
+
+.about-point:hover .about-point__mark::after,
+.about-point:focus-within .about-point__mark::after,
+.about-point.is-open .about-point__mark::after {
+  transform: translateX(-50%) rotate(90deg);
+  opacity: 0;
+}
+
+.about-point:hover .about-point__n,
+.about-point:focus-within .about-point__n,
+.about-point.is-open .about-point__n {
+  color: var(--white);
+}
+
+@media (min-width: 900px) {
+  .about__layout {
+    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.8fr);
+    column-gap: clamp(3rem, 7vw, 6.5rem);
+  }
+
+  .about__main {
+    padding-right: clamp(1rem, 3vw, 2rem);
+    border-right: 1px solid var(--line);
+  }
+
+  .about__points {
+    position: sticky;
+    top: calc(var(--nav-h) + 1.25rem);
+    border-top: none;
+  }
+
+  .about__points .eyebrow {
+    margin-bottom: 0.35rem;
+  }
+
+  .about-point {
+    transition: background 0.28s var(--ease), color 0.28s var(--ease);
+    padding-inline: 1rem;
+    margin-inline: -1rem;
+  }
+
+  .about-point:hover,
+  .about-point:focus-within,
+  .about-point.is-open {
+    background: var(--white);
+    color: var(--black);
+  }
+
+  .about-point:hover .about-point__n,
+  .about-point:focus-within .about-point__n,
+  .about-point.is-open .about-point__n,
+  .about-point:hover .about-point__panel p,
+  .about-point:focus-within .about-point__panel p,
+  .about-point.is-open .about-point__panel p {
+    color: rgba(0, 0, 0, 0.62);
+  }
+
+  .about-point:hover .about-point__mark::before,
+  .about-point:hover .about-point__mark::after,
+  .about-point:focus-within .about-point__mark::before,
+  .about-point:focus-within .about-point__mark::after,
+  .about-point.is-open .about-point__mark::before,
+  .about-point.is-open .about-point__mark::after {
+    background: var(--black);
+  }
+}
+
+@media (max-width: 899px) {
+  .about__points .eyebrow {
+    margin: 0.35rem 0 0.15rem;
+  }
+}

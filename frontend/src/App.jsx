@@ -71,9 +71,9 @@ export default function App() {
     const categoryId = gender ? workParts[3] : workParts[2];
 
     if (categoryId) {
-      page = <Lookbook slug={slug} gender={gender} categoryId={categoryId} />;
+      page = <Lookbook slug={slug} gender={gender} categoryId={categoryId} user={user} />;
     } else {
-      page = <Project slug={slug} />;
+      page = <Project slug={slug} user={user} />;
     }
   } else {
     switch (path) {

@@ -64,8 +64,9 @@ export function MarkSpine() {
 export function MarkDesign() {
   return (
     <Mark>
-      <rect x="11.5" y="11.5" width="25" height="25" />
-      <line x1="11.5" y1="11.5" x2="36.5" y2="36.5" />
+      <path d="M17 16 L11 20.5 L13.5 24 L17 21.5 V36.5 H31 V21.5 L34.5 24 L37 20.5 L31 16 C29.2 12.4 18.8 12.4 17 16 Z" />
+      <path d="M33.5 33.5 L40 27 L42 29 L35.5 35.5 Z" />
+      <line x1="40.6" y1="26.4" x2="43.2" y2="23.8" />
     </Mark>
   );
 }
@@ -73,8 +74,11 @@ export function MarkDesign() {
 export function MarkSourcing() {
   return (
     <Mark>
-      <circle cx="17" cy="24" r="11.5" />
-      <circle cx="31" cy="24" r="11.5" />
+      <ellipse cx="13" cy="24" rx="5" ry="11.5" />
+      <path d="M13 12.5 H33" />
+      <path d="M13 35.5 H33" />
+      <ellipse cx="33" cy="24" rx="5" ry="11.5" />
+      <path d="M33 12.5 Q42 18 34 24 Q42 30 33 35.5" />
     </Mark>
   );
 }
@@ -82,8 +86,10 @@ export function MarkSourcing() {
 export function MarkSample() {
   return (
     <Mark>
-      <rect x="10.5" y="10.5" width="20" height="20" />
-      <rect x="17.5" y="17.5" width="20" height="20" />
+      <circle cx="24" cy="9.5" r="2.6" />
+      <path d="M18 14.5 C18 12.2 30 12.2 30 14.5 L28.5 32.5 C27.4 36.2 20.6 36.2 19.5 32.5 Z" />
+      <line x1="24" y1="36.2" x2="24" y2="42" />
+      <line x1="18.5" y1="42" x2="29.5" y2="42" />
     </Mark>
   );
 }
@@ -91,9 +97,11 @@ export function MarkSample() {
 export function MarkProduction() {
   return (
     <Mark>
-      <line x1="13.5" y1="10" x2="13.5" y2="38" />
-      <line x1="24" y1="10" x2="24" y2="38" />
-      <line x1="34.5" y1="10" x2="34.5" y2="38" />
+      <rect x="7.5" y="32" width="33" height="6.5" />
+      <path d="M12 32 V16.5 H34.5 V23.5 H22.5 V32" />
+      <line x1="34.5" y1="23.5" x2="34.5" y2="32" />
+      <circle cx="18.5" cy="12" r="3.2" />
+      <line x1="18.5" y1="15.2" x2="18.5" y2="16.5" />
     </Mark>
   );
 }
@@ -101,10 +109,15 @@ export function MarkProduction() {
 export function MarkQuality() {
   return (
     <Mark>
-      <path d="M10.5 20.5 V10.5 H20.5" />
-      <path d="M27.5 10.5 H37.5 V20.5" />
-      <path d="M37.5 27.5 V37.5 H27.5" />
-      <path d="M20.5 37.5 H10.5 V27.5" />
+      <path d="M24 7.5 V11" />
+      <path d="M14 14.5 L24 11 L34 14.5" />
+      <path d="M14 14.5 L10 18 L13.5 20.5 L17 18 V36.5 H31 V18 L34.5 20.5 L38 18 L34 14.5" />
+      <path d="M9.5 26.5 H38.5" />
+      <path d="M12 26.5 V29" />
+      <path d="M18 26.5 V28.4" />
+      <path d="M24 26.5 V29" />
+      <path d="M30 26.5 V28.4" />
+      <path d="M36 26.5 V29" />
     </Mark>
   );
 }
@@ -112,7 +125,10 @@ export function MarkQuality() {
 export function MarkDispatch() {
   return (
     <Mark>
-      <path d="M38.5 11.5 H13.5 V36.5 H38.5" />
+      <rect x="10" y="16" width="28" height="22" />
+      <rect x="10" y="11.5" width="28" height="4.5" />
+      <path d="M24 11.5 V38" />
+      <path d="M10 27 H38" />
     </Mark>
   );
 }

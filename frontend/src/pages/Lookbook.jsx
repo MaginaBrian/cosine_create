@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { getLook } from "../data";
+import { isBrandOwner } from "../clientHome";
+import OrderPanel from "../components/OrderPanel";
 import "./Lookbook.css";
 
 function ProductSlide({ front, back, alt }) {
@@ -24,7 +26,7 @@ function ProductSlide({ front, back, alt }) {
   );
 }
 
-export default function Lookbook({ slug, gender, categoryId }) {
+export default function Lookbook({ slug, gender, categoryId, user }) {
   const data = getLook(slug, gender, categoryId);
 
   if (!data) {
@@ -68,6 +70,10 @@ export default function Lookbook({ slug, gender, categoryId }) {
           />
         ))}
       </div>
+
+      {isBrandOwner(user, slug) ? (
+        <OrderPanel user={user} slug={slug} gender={gender} categoryId={categoryId} />
+      ) : null}
     </article>
   );
 }

@@ -1,26 +1,39 @@
 .process__stages {
   max-width: 40rem;
   margin-inline: auto;
+  list-style: none;
+  padding: 0;
+  text-align: left;
 }
 
 .process__stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 3.4rem minmax(0, 1fr);
+  column-gap: 1.15rem;
+  align-items: start;
 }
 
 .process__stage + .process__stage {
-  margin-top: clamp(3.5rem, 8vw, 5.75rem);
-  padding-top: clamp(3.5rem, 8vw, 5.75rem);
-  border-top: 1px solid var(--line);
+  margin-top: clamp(2.4rem, 6vw, 3.6rem);
+  padding-top: clamp(2.4rem, 6vw, 3.6rem);
+  border-top: 1px solid var(--line-strong);
+}
+
+.process__rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  min-height: 100%;
 }
 
 .process__mark {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
-  width: clamp(2.75rem, 7vw, 3.15rem);
-  height: clamp(2.75rem, 7vw, 3.15rem);
-  margin-bottom: 0.9rem;
+  width: 3.4rem;
+  height: 3.4rem;
   color: var(--white);
+  background: var(--black);
 }
 
 .process__mark svg {
@@ -29,14 +42,14 @@
   height: 100%;
 }
 
-.process__stage h2 {
+.process__copy h2 {
   font-size: clamp(1.25rem, 2.2vw, 1.55rem);
   font-weight: 600;
   letter-spacing: -0.02em;
-  margin-bottom: 0.95rem;
+  margin-bottom: 0.85rem;
 }
 
-.process__stage p {
+.process__copy p {
   font-size: clamp(1.05rem, 1.65vw, 1.22rem);
   font-weight: 400;
   line-height: 1.65;
@@ -44,34 +57,35 @@
 
 @media (min-width: 721px) {
   .process__stages {
-    max-width: 46rem;
-    text-align: left;
+    max-width: 48rem;
   }
 
   .process__stage {
-    display: grid;
-    grid-template-columns: 3.15rem minmax(0, 1fr);
-    grid-template-areas:
-      "mark title"
-      ". body";
-    column-gap: 1.45rem;
-    align-items: center;
+    grid-template-columns: 3.6rem minmax(0, 1fr);
+    column-gap: 1.6rem;
+  }
+
+  .process__stage + .process__stage {
+    margin-top: 0;
+    padding-top: clamp(2.75rem, 5vw, 3.75rem);
+  }
+
+  .process__rail::before {
+    content: "";
+    position: absolute;
+    top: 3.6rem;
+    bottom: calc(-1 * clamp(2.75rem, 5vw, 3.75rem));
+    left: 50%;
+    width: 1px;
+    background: var(--line-strong);
+  }
+
+  .process__stage:last-child .process__rail::before {
+    display: none;
   }
 
   .process__mark {
-    grid-area: mark;
-    width: 3.15rem;
-    height: 3.15rem;
-    margin-bottom: 0;
-  }
-
-  .process__stage h2 {
-    grid-area: title;
-    margin-bottom: 0;
-  }
-
-  .process__stage p {
-    grid-area: body;
-    margin-top: 0.95rem;
+    width: 3.6rem;
+    height: 3.6rem;
   }
 }

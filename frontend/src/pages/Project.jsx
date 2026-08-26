@@ -1,4 +1,6 @@
 import { CLOTHING_CATEGORIES, SHARED_CATEGORIES, getProject } from "../data";
+import { isBrandOwner } from "../clientHome";
+import OrderPanel from "../components/OrderPanel";
 import "./Project.css";
 
 function Category({ slug, gender, category, look, hideTitle }) {
@@ -52,7 +54,7 @@ function LookColumn({ slug, gender, label, looks }) {
   );
 }
 
-export default function Project({ slug }) {
+export default function Project({ slug, user }) {
   const project = getProject(slug);
 
   if (!project) {
@@ -109,6 +111,8 @@ export default function Project({ slug }) {
           </div>
         ))}
       </section>
+
+      {isBrandOwner(user, slug) ? <OrderPanel user={user} slug={slug} /> : null}
     </article>
   );
 }

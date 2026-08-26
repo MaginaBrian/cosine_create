@@ -52,17 +52,21 @@ export default function Process() {
   return (
     <article className="essay process">
       <h1>Process</h1>
-      <div className="process__stages">
+      <ol className="process__stages">
         {STAGES.map(({ id, title, Mark, body }) => (
-          <section key={id} className="process__stage">
-            <div className="process__mark">
-              <Mark />
+          <li key={id} className="process__stage">
+            <div className="process__rail" aria-hidden="true">
+              <div className="process__mark">
+                <Mark />
+              </div>
             </div>
-            <h2>{title}</h2>
-            <p>{body}</p>
-          </section>
+            <div className="process__copy">
+              <h2>{title}</h2>
+              <p>{body}</p>
+            </div>
+          </li>
         ))}
-      </div>
+      </ol>
     </article>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { loginRequest, setSession } from "../api";
+import { clientHome } from "../clientHome";
 import "./Portal.css";
 
 export default function Login({ user, onLogin }) {
@@ -10,7 +11,7 @@ export default function Login({ user, onLogin }) {
 
   useEffect(() => {
     if (!user) return;
-    window.location.hash = user.role === "admin" ? "#/admin" : "#/studio";
+    window.location.hash = clientHome(user);
   }, [user]);
 
   const onSubmit = async (e) => {
@@ -21,7 +22,7 @@ export default function Login({ user, onLogin }) {
       const data = await loginRequest(email, password);
       setSession(data.token, data.user);
       onLogin(data.user);
-      window.location.hash = data.user.role === "admin" ? "#/admin" : "#/studio";
+      window.location.hash = clientHome(data.user);
     } catch (err) {
       setError(err.message || "Could not sign in");
     } finally {

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { clientHome } from "../clientHome";
 
 export default function Guard({ user, role, children }) {
   useEffect(() => {
@@ -7,7 +8,7 @@ export default function Guard({ user, role, children }) {
       return;
     }
     if (role && user.role !== role) {
-      window.location.hash = user.role === "admin" ? "#/admin" : "#/studio";
+      window.location.hash = clientHome(user);
     }
   }, [user, role]);
 

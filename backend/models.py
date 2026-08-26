@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import json
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -75,10 +76,24 @@ class Order(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     stage = db.Column(db.String(40), nullable=False)
     notes = db.Column(db.Text, nullable=True)
+    garment = db.Column(db.String(80), nullable=True)
+    size_breakdown = db.Column(db.Text, nullable=True)
+    color = db.Column(db.String(120), nullable=True)
+    height = db.Column(db.String(40), nullable=True)
+    fabric = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
 
     user = db.relationship("User", back_populates="orders")
     product = db.relationship("Product")
+
+    def parsed_sizes(self):
+        if not self.size_breakdown:
+            return None
+        try:
+            data = json.loads(self.size_breakdown)
+        except (TypeError, ValueError):
+            return None
+        return data if isinstance(data, dict) else None
 
     def to_public(self, include_user=False):
         created = self.created_at
@@ -99,6 +114,11 @@ class Order(db.Model):
             "quantity": self.quantity,
             "stage": self.stage,
             "notes": self.notes,
+            "garment": self.garment,
+            "sizes": self.parsed_sizes(),
+            "color": self.color,
+            "height": self.height,
+            "fabric": self.fabric,
             "created_at": iso,
         }
         if include_user and self.user:

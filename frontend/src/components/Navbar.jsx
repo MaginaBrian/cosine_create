@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Logo from "./Logo";
+import { clientHome } from "../clientHome";
 import "./Navbar.css";
 
 const LINKS = [
@@ -18,8 +19,7 @@ function isCurrent(path, match) {
 }
 
 function accountHref(user) {
-  if (!user) return "#/";
-  return user.role === "admin" ? "#/admin" : "#/studio";
+  return clientHome(user);
 }
 
 export default function Navbar({ path, user, onLogout }) {
@@ -48,11 +48,7 @@ export default function Navbar({ path, user, onLogout }) {
     if (state.count >= SECRET_CLICKS) {
       e.preventDefault();
       state.count = 0;
-      window.location.hash = user
-        ? user.role === "admin"
-          ? "#/admin"
-          : "#/studio"
-        : "#/login";
+      window.location.hash = user ? clientHome(user) : "#/login";
       return;
     }
 
@@ -104,7 +100,14 @@ export default function Navbar({ path, user, onLogout }) {
               <a
                 href={accountHref(user)}
                 className="nav__account"
-                aria-current={path === "/studio" || path === "/admin" || path === "/account" ? "page" : undefined}
+                aria-current={
+                  path === "/studio" ||
+                  path === "/admin" ||
+                  path === "/account" ||
+                  (user?.client_slug && path === `/work/${user.client_slug}`)
+                    ? "page"
+                    : undefined
+                }
               >
                 {user.brand || user.name}
               </a>

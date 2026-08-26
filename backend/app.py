@@ -1,11 +1,51 @@
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
+from sqlalchemy import inspect, text
+import json
 
 from config import Config
 from models import Order, Product, User, db
 from security import check_password, make_token, require_auth, require_role
 
-STAGES = {"idea", "sample", "produce", "reorder"}
+STAGES = {"brief", "source", "sample", "produce", "distribute", "idea", "reorder"}
+PROCESS_STAGES = ("brief", "source", "sample", "produce", "distribute")
+STAGE_ALIASES = {"idea": "brief", "reorder": "produce"}
+GARMENT_IDS = {
+    "oversized-t-shirt",
+    "hoodie",
+    "sweatshirt",
+    "female-sweatpants",
+    "male-sweatpants",
+    "vest",
+}
+HEIGHTS = {"Short", "Regular", "Tall"}
+
+
+def canonical_stage(value):
+    key = (value or "").strip()
+    return STAGE_ALIASES.get(key, key)
+
+
+def ensure_schema():
+    inspector = inspect(db.engine)
+    if "orders" not in inspector.get_table_names():
+        return
+    cols = {col["name"] for col in inspector.get_columns("orders")}
+    statements = []
+    if "garment" not in cols:
+        statements.append("ALTER TABLE orders ADD COLUMN garment VARCHAR(80)")
+    if "size_breakdown" not in cols:
+        statements.append("ALTER TABLE orders ADD COLUMN size_breakdown TEXT")
+    if "color" not in cols:
+        statements.append("ALTER TABLE orders ADD COLUMN color VARCHAR(120)")
+    if "height" not in cols:
+        statements.append("ALTER TABLE orders ADD COLUMN height VARCHAR(40)")
+    if "fabric" not in cols:
+        statements.append("ALTER TABLE orders ADD COLUMN fabric VARCHAR(200)")
+    for sql in statements:
+        db.session.execute(text(sql))
+    if statements:
+        db.session.commit()
 
 
 def create_app():
@@ -17,11 +57,12 @@ def create_app():
         app,
         resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
         allow_headers=["Content-Type", "Authorization"],
-        methods=["GET", "POST", "OPTIONS"],
+        methods=["GET", "POST", "PATCH", "OPTIONS"],
     )
 
     with app.app_context():
         db.create_all()
+        ensure_schema()
 
     register_routes(app)
     register_cli(app)
@@ -111,9 +152,43 @@ def register_routes(app):
         if quantity < 1:
             return jsonify({"error": "quantity must be at least 1"}), 400
 
-        stage = (body.get("stage") or "idea").strip()
-        if stage not in STAGES:
+        sizes = body.get("sizes")
+        size_breakdown = None
+        if sizes is not None:
+            if not isinstance(sizes, dict):
+                return jsonify({"error": "sizes must be an object of size to quantity"}), 400
+            cleaned = {}
+            total = 0
+            for size, qty in sizes.items():
+                label = str(size).strip()[:8]
+                try:
+                    n = int(qty)
+                except (TypeError, ValueError):
+                    return jsonify({"error": f"invalid quantity for size {size}"}), 400
+                if n < 0:
+                    return jsonify({"error": "size quantities cannot be negative"}), 400
+                if n:
+                    cleaned[label] = n
+                    total += n
+            if total < 1:
+                return jsonify({"error": "add a quantity for at least one size"}), 400
+            quantity = total
+            size_breakdown = json.dumps(cleaned)
+
+        garment = (body.get("garment") or "").strip() or None
+        if garment and garment not in GARMENT_IDS:
+            return jsonify({"error": "Unknown garment"}), 400
+
+        stage = canonical_stage(body.get("stage") or "brief")
+        if stage not in PROCESS_STAGES:
             return jsonify({"error": "Invalid stage"}), 400
+
+        color = (body.get("color") or "").strip() or None
+        height = (body.get("height") or "").strip() or None
+        if height and height not in HEIGHTS:
+            return jsonify({"error": "Height must be Short, Regular or Tall"}), 400
+        fabric = (body.get("fabric") or "").strip() or None
+        notes = (body.get("notes") or "").strip() or None
 
         order = Order(
             user_id=user.id,
@@ -125,7 +200,12 @@ def register_routes(app):
             making=(body.get("making") or "Apparel").strip() or "Apparel",
             quantity=quantity,
             stage=stage,
-            notes=(body.get("notes") or "").strip() or None,
+            notes=notes,
+            garment=garment,
+            size_breakdown=size_breakdown,
+            color=color,
+            height=height,
+            fabric=fabric,
         )
         if not order.contact_name or not order.brand or not order.email:
             return jsonify({"error": "name, brand, and email are required"}), 400
@@ -133,6 +213,31 @@ def register_routes(app):
         db.session.add(order)
         db.session.commit()
         return jsonify({"order": order.to_public()}), 201
+
+    @app.patch("/api/orders/<int:order_id>/stage")
+    @require_auth
+    @require_role("admin")
+    def update_order_stage(order_id):
+        order = db.session.get(Order, order_id)
+        if order is None:
+            return jsonify({"error": "Order not found"}), 404
+
+        body = request.get_json(silent=True) or {}
+        stage = canonical_stage(body.get("stage"))
+        if stage not in PROCESS_STAGES:
+            return jsonify({"error": "Invalid stage"}), 400
+
+        previous = canonical_stage(order.stage)
+        order.stage = stage
+        db.session.commit()
+
+        mail = {"sent": False, "skipped": True}
+        if previous != stage:
+            from mailer import send_stage_email
+
+            mail = send_stage_email(order, stage)
+
+        return jsonify({"order": order.to_public(include_user=True), "email": mail})
 
 
 app = create_app()

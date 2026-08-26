@@ -71,3 +71,7 @@ export function fetchOrders() {
 export function createOrder(payload) {
   return api("/api/orders", { method: "POST", body: payload });
 }
+
+export function updateOrderStage(orderId, stage) {
+  return api(`/api/orders/${orderId}/stage`, { method: "PATCH", body: { stage } });
+}
