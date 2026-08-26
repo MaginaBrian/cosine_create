@@ -2,8 +2,12 @@ import "./Logo.css";
 
 export default function Logo() {
   return (
-    <span className="wordmark">
-      Cosine Create
-    </span>
+    <img
+      className="brand-lockup"
+      src="/lockup.png"
+      alt=""
+      width="497"
+      height="277"
+    />
   );
 }

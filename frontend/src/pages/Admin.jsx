@@ -1,19 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchOrders, updateOrderStage } from "../api";
-import { STAGES } from "../data";
 import { GARMENTS, formatSizeRun } from "../measurements";
 import "./Portal.css";
 import "./Admin.css";
+
+const ADMIN_STAGES = [
+  { key: "produce", name: "Production" },
+  { key: "distribute", name: "Dispatch" },
+];
 
 function garmentLabel(order) {
   const match = GARMENTS.find((g) => g.id === order.garment);
   return match?.name || order.product?.name || "—";
 }
 
-function canonicalStage(key) {
-  if (key === "idea") return "brief";
-  if (key === "reorder") return "produce";
-  return key;
+function adminStage(key) {
+  if (key === "distribute" || key === "dispatch") return "distribute";
+  return "produce";
 }
 
 function formatDateTime(iso) {
@@ -32,11 +35,77 @@ function formatDateTime(iso) {
   }
 }
 
+function companyKey(order) {
+  return (order.client_slug || order.brand || "other").toLowerCase();
+}
+
+function companyLabel(order) {
+  return order.brand || order.user?.brand || order.client_slug || "Other";
+}
+
+function groupByCompany(orders) {
+  const map = new Map();
+  for (const order of orders) {
+    const key = companyKey(order);
+    if (!map.has(key)) {
+      map.set(key, { key, label: companyLabel(order), orders: [] });
+    }
+    map.get(key).orders.push(order);
+  }
+  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function OrderRows({ orders, savingId, onStageChange }) {
+  if (!orders.length) {
+    return (
+      <tr>
+        <td colSpan={11}>No orders yet.</td>
+      </tr>
+    );
+  }
+
+  return orders.map((o) => (
+    <tr key={o.id}>
+      <td>{formatDateTime(o.created_at)}</td>
+      <td>{o.ref}</td>
+      <td>
+        <strong>{o.user?.name || o.contact_name}</strong>
+        <span>{o.user?.email || o.email}</span>
+      </td>
+      <td>{garmentLabel(o)}</td>
+      <td>{o.quantity}</td>
+      <td>{formatSizeRun(o.sizes) || "—"}</td>
+      <td>{o.color || "—"}</td>
+      <td>{o.height || "—"}</td>
+      <td>{o.fabric || "—"}</td>
+      <td>{o.notes || "—"}</td>
+      <td>
+        <label className="admin-stage">
+          <span className="sr-only">Stage for {o.ref}</span>
+          <select
+            value={adminStage(o.stage)}
+            disabled={savingId === o.id}
+            onChange={(e) => onStageChange(o, e.target.value)}
+          >
+            {ADMIN_STAGES.map((s) => (
+              <option key={s.key} value={s.key}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </td>
+    </tr>
+  ));
+}
+
 export default function Admin({ user, onLogout }) {
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [savingId, setSavingId] = useState(null);
+  const [openKeys, setOpenKeys] = useState(() => new Set());
+  const primedCompanies = useRef(false);
 
   useEffect(() => {
     fetchOrders()
@@ -44,8 +113,16 @@ export default function Admin({ user, onLogout }) {
       .catch((err) => setError(err.message));
   }, []);
 
+  const companies = useMemo(() => groupByCompany(orders), [orders]);
+
+  useEffect(() => {
+    if (primedCompanies.current || companies.length === 0) return;
+    primedCompanies.current = true;
+    setOpenKeys(new Set([companies[0].key]));
+  }, [companies]);
+
   const onStageChange = async (order, next) => {
-    const current = canonicalStage(order.stage);
+    const current = adminStage(order.stage);
     if (next === current) return;
     setError("");
     setNotice("");
@@ -53,16 +130,8 @@ export default function Admin({ user, onLogout }) {
     try {
       const data = await updateOrderStage(order.id, next);
       setOrders((list) => list.map((row) => (row.id === order.id ? data.order : row)));
-      const mail = data.email || {};
-      if (mail.sent) {
-        setNotice(`Progress email sent to ${mail.to || order.email}.`);
-      } else if (mail.logged) {
-        setNotice(`Stage updated. Progress email logged for ${mail.to || order.email} (SMTP not configured).`);
-      } else if (mail.skipped) {
-        setNotice("Stage unchanged.");
-      } else {
-        setNotice(`Stage updated. Email not sent${mail.reason ? `: ${mail.reason}` : "."}`);
-      }
+      const name = next === "distribute" ? "Dispatch" : "Production";
+      setNotice(`${order.ref} is now ${name}. The client sees this on their orders.`);
     } catch (err) {
       setError(err.message || "Could not update stage");
     } finally {
@@ -78,7 +147,8 @@ export default function Admin({ user, onLogout }) {
             <p className="eyebrow">Admin</p>
             <h1>All orders.</h1>
             <p className="page-head__lede">
-              Signed in as {user?.name}. Moving a stage emails the client with progress.
+              Signed in as {user?.name}. Open a company to see its orders. Production or Dispatch
+              shows on the client’s page as soon as you change it.
             </p>
           </div>
           <button type="button" className="btn" onClick={onLogout}>
@@ -91,66 +161,63 @@ export default function Admin({ user, onLogout }) {
         <div className="container">
           {error ? <p className="admin-error">{error}</p> : null}
           {notice ? <p className="admin-ok">{notice}</p> : null}
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Order no</th>
-                  <th>Who</th>
-                  <th>Product</th>
-                  <th>Qty</th>
-                  <th>Size</th>
-                  <th>Color</th>
-                  <th>Height</th>
-                  <th>Apparel fabric</th>
-                  <th>Notes</th>
-                  <th>Stage</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.length === 0 ? (
-                  <tr>
-                    <td colSpan={11}>No orders yet.</td>
-                  </tr>
-                ) : (
-                  orders.map((o) => (
-                    <tr key={o.id}>
-                      <td>{formatDateTime(o.created_at)}</td>
-                      <td>{o.ref}</td>
-                      <td>
-                        <strong>{o.user?.name || o.contact_name}</strong>
-                        <span>{o.user?.email || o.email}</span>
-                      </td>
-                      <td>{garmentLabel(o)}</td>
-                      <td>{o.quantity}</td>
-                      <td>{formatSizeRun(o.sizes) || "—"}</td>
-                      <td>{o.color || "—"}</td>
-                      <td>{o.height || "—"}</td>
-                      <td>{o.fabric || "—"}</td>
-                      <td>{o.notes || "—"}</td>
-                      <td>
-                        <label className="admin-stage">
-                          <span className="sr-only">Stage for {o.ref}</span>
-                          <select
-                            value={canonicalStage(o.stage) || "brief"}
-                            disabled={savingId === o.id}
-                            onChange={(e) => onStageChange(o, e.target.value)}
-                          >
-                            {STAGES.map((s) => (
-                              <option key={s.key} value={s.key}>
-                                {s.name}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          {companies.length === 0 ? (
+            <p className="admin-empty">No orders yet.</p>
+          ) : (
+            <div className="admin-companies">
+              {companies.map((company) => (
+                <details
+                  key={company.key}
+                  className="admin-company"
+                  open={openKeys.has(company.key)}
+                  onToggle={(e) => {
+                    const nextOpen = e.currentTarget.open;
+                    setOpenKeys((keys) => {
+                      if (keys.has(company.key) === nextOpen) return keys;
+                      const next = new Set(keys);
+                      if (nextOpen) next.add(company.key);
+                      else next.delete(company.key);
+                      return next;
+                    });
+                  }}
+                >
+                  <summary>
+                    <span className="admin-company__name">{company.label}</span>
+                    <span className="admin-company__count">
+                      {company.orders.length} {company.orders.length === 1 ? "order" : "orders"}
+                    </span>
+                    <span className="admin-company__mark" aria-hidden="true" />
+                  </summary>
+                  <div className="admin-table-wrap">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Order no</th>
+                          <th>Who</th>
+                          <th>Product</th>
+                          <th>Qty</th>
+                          <th>Size</th>
+                          <th>Color</th>
+                          <th>Height</th>
+                          <th>Apparel fabric</th>
+                          <th>Notes</th>
+                          <th>Stage</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <OrderRows
+                          orders={company.orders}
+                          savingId={savingId}
+                          onStageChange={onStageChange}
+                        />
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>

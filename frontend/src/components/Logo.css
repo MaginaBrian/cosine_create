@@ -1,9 +1,11 @@
-.wordmark {
-  font-family: var(--font);
-  font-weight: 400;
-  font-size: clamp(1.2rem, 2.4vw, 1.85rem);
-  letter-spacing: -0.045em;
-  line-height: 1;
-  text-transform: uppercase;
-  white-space: nowrap;
+.brand-mark {
+  display: block;
+  height: 3.35rem;
+  width: auto;
+}
+
+.brand-lockup {
+  display: block;
+  height: 4.15rem;
+  width: auto;
 }

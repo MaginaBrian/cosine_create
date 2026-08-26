@@ -8,6 +8,88 @@
   margin-bottom: 1.5rem;
 }
 
+.admin-empty {
+  color: var(--muted);
+}
+
+.admin-companies {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-company {
+  border: 1px solid var(--line-strong);
+}
+
+.admin-company summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 1.1rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.05rem 1.15rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.admin-company summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-company__name {
+  font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-company__count {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-company__mark {
+  position: relative;
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.admin-company__mark::before,
+.admin-company__mark::after {
+  content: "";
+  position: absolute;
+  background: var(--white);
+}
+
+.admin-company__mark::before {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.admin-company__mark::after {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.admin-company[open] .admin-company__mark::after {
+  opacity: 0;
+  transform: translateX(-50%) rotate(90deg);
+}
+
+.admin-company .admin-table-wrap {
+  border: none;
+  border-top: 1px solid var(--line-strong);
+}
+
 .admin-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--line-strong);

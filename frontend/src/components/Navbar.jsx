@@ -97,20 +97,23 @@ export default function Navbar({ path, user, onLogout }) {
           </a>
           {user ? (
             <>
-              <a
-                href={accountHref(user)}
-                className="nav__account"
-                aria-current={
-                  path === "/studio" ||
-                  path === "/admin" ||
-                  path === "/account" ||
-                  (user?.client_slug && path === `/work/${user.client_slug}`)
-                    ? "page"
-                    : undefined
-                }
-              >
-                {user.brand || user.name}
-              </a>
+              {path === "/admin" ? (
+                <span className="nav__account nav__account--quiet">Admin</span>
+              ) : (
+                <a
+                  href={accountHref(user)}
+                  className="nav__account"
+                  aria-current={
+                    path === "/studio" ||
+                    path === "/account" ||
+                    (user?.client_slug && path === `/work/${user.client_slug}`)
+                      ? "page"
+                      : undefined
+                  }
+                >
+                  {user.brand || user.name}
+                </a>
+              )}
               <button type="button" className="nav__out" onClick={onLogout}>
                 Sign out
               </button>

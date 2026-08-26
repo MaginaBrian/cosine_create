@@ -46,7 +46,6 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
   const [productId, setProductId] = useState("");
   const [simpleQty, setSimpleQty] = useState("");
   const [simpleColor, setSimpleColor] = useState("");
-  const [simpleFabric, setSimpleFabric] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
@@ -70,6 +69,20 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
 
   useEffect(() => {
     load().catch((err) => setError(err.message));
+    const refresh = () => {
+      fetchOrders()
+        .then((o) => setOrders(o.orders || []))
+        .catch(() => {});
+    };
+    const timer = setInterval(refresh, 5000);
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
   }, []);
 
   useEffect(() => {
@@ -154,12 +167,11 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
         email: user.email,
         making: "Apparel",
         quantity,
-        stage: "brief",
+        stage: "produce",
         garment: garment.id,
         sizes,
         color: (specs.color || "").trim() || undefined,
         height: (specs.height || "").trim() || undefined,
-        fabric: (specs.fabric || "").trim() || undefined,
         notes: extraNotes || undefined,
       });
       setSent(true);
@@ -186,10 +198,6 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
       setError("Write the type of color.");
       return;
     }
-    if (!simpleFabric.trim()) {
-      setError("Write the apparel fabric.");
-      return;
-    }
     setBusy(true);
     try {
       await createOrder({
@@ -199,15 +207,13 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
         email: user.email,
         making: "Apparel",
         quantity,
-        stage: "brief",
+        stage: "produce",
         color: simpleColor.trim(),
-        fabric: simpleFabric.trim(),
         notes: notes.trim() || undefined,
       });
       setSent(true);
       setSimpleQty("");
       setSimpleColor("");
-      setSimpleFabric("");
       setNotes("");
       await load();
     } catch (err) {
@@ -456,16 +462,6 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
             />
           </div>
           <div className="field">
-            <label htmlFor="order-fabric-simple">Apparel fabric</label>
-            <input
-              id="order-fabric-simple"
-              value={simpleFabric}
-              onChange={(e) => setSimpleFabric(e.target.value)}
-              placeholder="Write the fabric"
-              required
-            />
-          </div>
-          <div className="field">
             <label htmlFor="order-notes-simple">Notes</label>
             <textarea
               id="order-notes-simple"
@@ -496,6 +492,17 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                   {o.quantity} pcs
                   {formatSizeRun(o.sizes) ? ` · ${formatSizeRun(o.sizes)}` : ""}
                 </em>
+                <b
+                  className={`order-status${
+                    o.stage === "distribute" || o.stage === "dispatch"
+                      ? " order-status--dispatch"
+                      : ""
+                  }`}
+                >
+                  {o.stage === "distribute" || o.stage === "dispatch"
+                    ? "Dispatch"
+                    : "Production"}
+                </b>
               </li>
             ))}
           </ul>

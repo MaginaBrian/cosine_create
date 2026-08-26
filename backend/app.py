@@ -7,9 +7,16 @@ from config import Config
 from models import Order, Product, User, db
 from security import check_password, make_token, require_auth, require_role
 
-STAGES = {"brief", "source", "sample", "produce", "distribute", "idea", "reorder"}
-PROCESS_STAGES = ("brief", "source", "sample", "produce", "distribute")
-STAGE_ALIASES = {"idea": "brief", "reorder": "produce"}
+ADMIN_MOVE_STAGES = ("produce", "distribute")
+STAGE_ALIASES = {
+    "idea": "produce",
+    "reorder": "produce",
+    "brief": "produce",
+    "source": "produce",
+    "sample": "produce",
+    "production": "produce",
+    "dispatch": "distribute",
+}
 GARMENT_IDS = {
     "oversized-t-shirt",
     "hoodie",
@@ -46,6 +53,16 @@ def ensure_schema():
         db.session.execute(text(sql))
     if statements:
         db.session.commit()
+    db.session.execute(
+        text(
+            "UPDATE orders SET stage = 'produce' "
+            "WHERE stage IN ('brief', 'source', 'sample', 'idea', 'reorder', 'production')"
+        )
+    )
+    db.session.execute(
+        text("UPDATE orders SET stage = 'distribute' WHERE stage IN ('dispatch')")
+    )
+    db.session.commit()
 
 
 def create_app():
@@ -179,9 +196,9 @@ def register_routes(app):
         if garment and garment not in GARMENT_IDS:
             return jsonify({"error": "Unknown garment"}), 400
 
-        stage = canonical_stage(body.get("stage") or "brief")
-        if stage not in PROCESS_STAGES:
-            return jsonify({"error": "Invalid stage"}), 400
+        stage = canonical_stage(body.get("stage") or "produce")
+        if stage not in ADMIN_MOVE_STAGES:
+            return jsonify({"error": "Stage must be production or dispatch"}), 400
 
         color = (body.get("color") or "").strip() or None
         height = (body.get("height") or "").strip() or None
@@ -224,20 +241,12 @@ def register_routes(app):
 
         body = request.get_json(silent=True) or {}
         stage = canonical_stage(body.get("stage"))
-        if stage not in PROCESS_STAGES:
-            return jsonify({"error": "Invalid stage"}), 400
+        if stage not in ADMIN_MOVE_STAGES:
+            return jsonify({"error": "Stage must be production or dispatch"}), 400
 
-        previous = canonical_stage(order.stage)
         order.stage = stage
         db.session.commit()
-
-        mail = {"sent": False, "skipped": True}
-        if previous != stage:
-            from mailer import send_stage_email
-
-            mail = send_stage_email(order, stage)
-
-        return jsonify({"order": order.to_public(include_user=True), "email": mail})
+        return jsonify({"order": order.to_public(include_user=True)})
 
 
 app = create_app()

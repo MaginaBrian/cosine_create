@@ -22,12 +22,12 @@ STAGE_COPY = {
         "body": "Your project is in sampling. Fit and construction are being proven in the hand.",
     },
     "produce": {
-        "name": "Produce",
+        "name": "Production",
         "body": "Your project is in production. The line is set around this order.",
     },
     "distribute": {
-        "name": "Distribute",
-        "body": "Your project is in distribution. Finishing, QC and dispatch are underway.",
+        "name": "Dispatch",
+        "body": "Your project is in dispatch. Finishing, QC and packing are underway.",
     },
 }
 

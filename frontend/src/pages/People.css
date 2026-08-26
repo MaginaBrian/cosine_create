@@ -72,6 +72,10 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+.people__role p + p {
+  margin-top: 1.1rem;
+}
+
 @media (min-width: 721px) {
   .people__role {
     min-height: min(82svh, 44rem);

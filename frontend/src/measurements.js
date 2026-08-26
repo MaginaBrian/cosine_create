@@ -7,13 +7,6 @@ const COLOR_FIELD = {
   required: true,
 };
 
-const FABRIC_FIELD = {
-  id: "fabric",
-  label: "Apparel fabric",
-  placeholder: "Write the fabric",
-  required: true,
-};
-
 const HEIGHT_FIELD = {
   id: "height",
   label: "Height",
@@ -29,7 +22,7 @@ export const GARMENTS = [
     genders: ["men", "women"],
     brands: ["mwotaji"],
     sizes: SIZES,
-    fields: [COLOR_FIELD, FABRIC_FIELD],
+    fields: [COLOR_FIELD],
   },
   {
     id: "hoodie",
@@ -38,7 +31,7 @@ export const GARMENTS = [
     genders: ["shared"],
     brands: ["mwotaji"],
     sizes: SIZES,
-    fields: [COLOR_FIELD, FABRIC_FIELD],
+    fields: [COLOR_FIELD],
   },
   {
     id: "sweatshirt",
@@ -47,7 +40,7 @@ export const GARMENTS = [
     genders: ["shared"],
     brands: ["mwotaji"],
     sizes: SIZES,
-    fields: [COLOR_FIELD, FABRIC_FIELD],
+    fields: [COLOR_FIELD],
   },
   {
     id: "female-sweatpants",
@@ -59,7 +52,6 @@ export const GARMENTS = [
     sex: "female",
     fields: [
       COLOR_FIELD,
-      FABRIC_FIELD,
       { ...HEIGHT_FIELD, label: "Height (female bottoms)" },
     ],
   },
@@ -73,7 +65,6 @@ export const GARMENTS = [
     sex: "male",
     fields: [
       COLOR_FIELD,
-      FABRIC_FIELD,
       { ...HEIGHT_FIELD, label: "Height (male bottoms)" },
     ],
   },
@@ -86,7 +77,6 @@ export const GARMENTS = [
     sizes: SIZES,
     fields: [
       COLOR_FIELD,
-      FABRIC_FIELD,
       {
         id: "sleeve",
         label: "Sleeve",

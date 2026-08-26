@@ -6,7 +6,7 @@ const POINTS = [
     id: "studio",
     n: "01",
     title: "A making studio",
-    body: "Cosine Create is a contract manufacturer for brands, businesses and founders; a partner in the idea, not a factory waiting for a locked spec.",
+    body: "Cosine Create designs and manufactures apparel and other products that carry a brand's identity beyond it — a partner in the idea. We work with brands, businesses and founders who need more than a producer; they need someone who can shape the idea as much as build it.",
   },
   {
     id: "end-to-end",
@@ -45,9 +45,11 @@ export default function About() {
           </p>
           <p>
             Watching an idea take shape, first as raw material then as a finished piece, is
-            the reason this exists. That moment doesn&apos;t happen by accident, and it
-            doesn&apos;t happen on a rushed line. This is treated as a craft, the way any
-            serious creative work is. Not a service performed on the way to a product.
+            the reason Cosine Create exists.
+          </p>
+          <p>
+            We treat this as a craft, not a task to get through. It takes time, and we give
+            it that time.
           </p>
           <p>
             The making itself is the discipline. We hold it to that standard because the

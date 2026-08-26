@@ -7,21 +7,30 @@ const ROLES = [
     title: "The Head",
     image: "/people/head.jpg",
     alt: "Fabric swatches, scissors and a project notebook on the studio table",
-    body: "This is where it started. Three years in, but the role has always been about seeing the whole shape of a project before it begins, sourcing and buying, creative direction, pricing, supply chain and logistics that make an idea actually deliverable. Knows fabrics across garment types well enough to know what\u2019s possible before a client hears \u201cno.\u201d Works across athleisure, casual, sportswear, women\u2019s and men\u2019s wear, and sits in on the sampling conversation alongside The Ear and The Spine, because the shape of a project doesn\u2019t stop being the founder\u2019s problem once design starts.",
+    body: [
+      "Three years in. Sees the whole shape of a project before it begins: sourcing, creative direction, pricing, supply chain and logistics.",
+      "Sources all the raw materials and knows fabrics across garment types well enough to say what's possible early. Works across athleisure, casual, sportswear, women's and men's wear, and sits in on sampling alongside The Ear and The Spine, because the shape of a project stays the founder's responsibility even after design starts.",
+    ],
   },
   {
     id: "eyes",
     title: "The Eyes",
     image: "/people/eyes.jpg",
     alt: "A garment production floor with sewing machines and hanging work in progress",
-    body: "Eight years in operations between them, watching over the process so nothing slips between stages. ISO-certified, with a working command of operational efficiency, strategy, sustainability and partnership. The ones who keep a client relationship steady and keep the standard defensible when it\u2019s questioned. Alongside The Spine, they oversee production timelines and floor supervision, making sure what\u2019s promised at the start of a project is what actually arrives at the end.",
+    body: [
+      "Nine years in operations, between them, watching over the process so nothing slips between stages. Operational efficiency, strategy, sustainability and partnerships, ISO-certified.",
+      "The ones who keep a client relationship steady and the standard defensible when it's questioned. Alongside The Spine, they oversee production timelines and floor supervision.",
+    ],
   },
   {
     id: "ear",
     title: "The Ear",
     image: "/people/ear.jpg",
     alt: "Pattern paper, rulers and a muslin toile on a dress form",
-    body: "Nine years in the room listening to what a client means before it becomes a garment. Trained across fashion design and pattern making, with the technical range to take a brief from sketch to tech pack \u2014 2D and 3D design, Illustrator, print and finishing and knowledge that stretches as far as sports shoe design. Comfortable across athleisure, streetwear, loungewear, casual and sportswear. Alongside The Head and The Spine, they carry the sampling conversation with clients through to fit and revision.",
+    body: [
+      "Seven years in the room listening to what a client means before it becomes a garment. Trained across fashion design and pattern making, with the range to take a brief from sketch to tech pack.",
+      "2D and 3D design, Illustrator, print and finishing, and knowledge that stretches as far as sports shoe design. Comfortable across athleisure, streetwear, loungewear, casual and sportswear. Alongside The Head and The Spine, this team carries the sampling conversation with clients through to fit and revision.",
+    ],
   },
   {
     id: "hands",
@@ -49,7 +58,9 @@ export default function People() {
             <img className="people__bg" src={image} alt={alt} />
             <div className="people__copy">
               <h2>{title}</h2>
-              <p>{body}</p>
+              {(Array.isArray(body) ? body : [body]).map((para) => (
+                <p key={para}>{para}</p>
+              ))}
             </div>
           </section>
         ))}

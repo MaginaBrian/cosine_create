@@ -11,7 +11,7 @@
 
   --container: 1280px;
   --gutter: clamp(1.25rem, 4vw, 3.25rem);
-  --nav-h: 80px;
+  --nav-h: 88px;
   --ease: 0.25s ease;
 
   color-scheme: dark;
