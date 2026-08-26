@@ -1,91 +1,213 @@
-.process__stages {
-  max-width: 40rem;
-  margin-inline: auto;
-  list-style: none;
-  padding: 0;
+.process.essay {
+  padding-top: clamp(3.5rem, 10vw, 7rem);
+  padding-bottom: 0;
+  background-image: repeating-linear-gradient(
+    -18deg,
+    transparent 0,
+    transparent 47px,
+    rgba(255, 255, 255, 0.035) 47px,
+    rgba(255, 255, 255, 0.035) 48px
+  );
+}
+
+.process__head {
+  max-width: 56rem;
+  margin: 0 auto clamp(3rem, 8vw, 5.5rem);
+  padding-inline: 0;
   text-align: left;
 }
 
-.process__stage {
-  display: grid;
-  grid-template-columns: 3.4rem minmax(0, 1fr);
-  column-gap: 1.15rem;
-  align-items: start;
+.process h1 {
+  margin-bottom: 0;
 }
 
-.process__stage + .process__stage {
-  margin-top: clamp(2.4rem, 6vw, 3.6rem);
-  padding-top: clamp(2.4rem, 6vw, 3.6rem);
+.process h1 span {
+  display: block;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  color: var(--muted);
+}
+
+.process__stages {
+  list-style: none;
+  padding: 0;
+  margin: 0 calc(-1 * var(--gutter));
+  text-align: left;
   border-top: 1px solid var(--line-strong);
 }
 
-.process__rail {
+.process__stage {
   position: relative;
-  display: flex;
-  justify-content: center;
-  min-height: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "mark index"
+    "copy copy";
+  gap: 1.1rem 1.25rem;
+  align-items: center;
+  padding: clamp(2.4rem, 6vw, 3.75rem) var(--gutter);
+}
+
+.process__stage--end {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "index mark"
+    "copy copy";
+}
+
+.process__index {
+  grid-area: index;
+  font-size: clamp(3.4rem, 12vw, 8rem);
+  font-weight: 700;
+  letter-spacing: -0.07em;
+  line-height: 0.8;
+  color: rgba(255, 255, 255, 0.12);
+  user-select: none;
+}
+
+.process__stage--end .process__index {
+  justify-self: end;
 }
 
 .process__mark {
+  grid-area: mark;
   position: relative;
   z-index: 1;
-  flex-shrink: 0;
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 5.1rem;
+  height: 5.1rem;
   color: var(--white);
-  background: var(--black);
+}
+
+.process__ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.process__ring--inner {
+  inset: 11%;
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .process__mark svg {
-  display: block;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 20%;
+  width: auto;
+  height: auto;
+}
+
+.process__copy {
+  grid-area: copy;
+  max-width: 38rem;
+}
+
+.process__stage--end .process__copy {
+  justify-self: end;
+  text-align: right;
 }
 
 .process__copy h2 {
-  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+  font-size: clamp(1.7rem, 4.2vw, 2.85rem);
   font-weight: 600;
-  letter-spacing: -0.02em;
-  margin-bottom: 0.85rem;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  margin-bottom: 0.9rem;
 }
 
 .process__copy p {
   font-size: clamp(1.05rem, 1.65vw, 1.22rem);
   font-weight: 400;
   line-height: 1.65;
+  color: rgba(255, 255, 255, 0.78);
 }
 
-@media (min-width: 721px) {
-  .process__stages {
-    max-width: 48rem;
-  }
+.process__stage::after {
+  content: "";
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: -1px;
+  height: 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+}
 
+.process__stage:last-child::after {
+  display: none;
+}
+
+@media (min-width: 900px) {
   .process__stage {
-    grid-template-columns: 3.6rem minmax(0, 1fr);
-    column-gap: 1.6rem;
+    grid-template-columns: 6.5rem minmax(0, 1fr) minmax(8rem, 0.55fr);
+    grid-template-areas: "mark copy index";
+    column-gap: clamp(1.5rem, 4vw, 3.5rem);
+    padding-block: clamp(3.25rem, 7vw, 5.25rem);
   }
 
-  .process__stage + .process__stage {
-    margin-top: 0;
-    padding-top: clamp(2.75rem, 5vw, 3.75rem);
-  }
-
-  .process__rail::before {
-    content: "";
-    position: absolute;
-    top: 3.6rem;
-    bottom: calc(-1 * clamp(2.75rem, 5vw, 3.75rem));
-    left: 50%;
-    width: 1px;
-    background: var(--line-strong);
-  }
-
-  .process__stage:last-child .process__rail::before {
-    display: none;
+  .process__stage--end {
+    grid-template-columns: minmax(8rem, 0.55fr) minmax(0, 1fr) 6.5rem;
+    grid-template-areas: "index copy mark";
   }
 
   .process__mark {
-    width: 3.6rem;
-    height: 3.6rem;
+    width: 6.5rem;
+    height: 6.5rem;
+  }
+
+  .process__copy {
+    max-width: 34rem;
+  }
+
+  .process__stage:hover,
+  .process__stage:focus,
+  .process__stage:focus-within {
+    background: var(--white);
+    color: var(--black);
+    outline: none;
+  }
+
+  .process__stage:hover .process__index,
+  .process__stage:focus .process__index,
+  .process__stage:focus-within .process__index {
+    color: rgba(0, 0, 0, 0.12);
+  }
+
+  .process__stage:hover .process__copy p,
+  .process__stage:focus .process__copy p,
+  .process__stage:focus-within .process__copy p {
+    color: rgba(0, 0, 0, 0.68);
+  }
+
+  .process__stage:hover .process__mark,
+  .process__stage:focus .process__mark,
+  .process__stage:focus-within .process__mark {
+    color: var(--black);
+  }
+
+  .process__stage:hover .process__ring,
+  .process__stage:focus .process__ring,
+  .process__stage:focus-within .process__ring {
+    border-color: rgba(0, 0, 0, 0.7);
+  }
+
+  .process__stage:hover .process__ring--inner,
+  .process__stage:focus .process__ring--inner,
+  .process__stage:focus-within .process__ring--inner {
+    border-color: rgba(0, 0, 0, 0.28);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .process__stage {
+    transition: background 0.35s var(--ease), color 0.35s var(--ease);
+  }
+
+  .process__index,
+  .process__copy p,
+  .process__mark,
+  .process__ring {
+    transition: color 0.35s var(--ease), border-color 0.35s var(--ease);
   }
 }

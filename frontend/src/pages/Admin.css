@@ -99,7 +99,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.82rem;
-  min-width: 1100px;
+  min-width: 1180px;
 }
 
 .admin-table th,
@@ -114,6 +114,9 @@
 .admin-table th:last-child,
 .admin-table td:last-child {
   border-right: none;
+  position: sticky;
+  right: 0;
+  background: var(--black);
 }
 
 .admin-table thead th {
@@ -157,6 +160,28 @@
   background: var(--white);
   color: var(--black);
   border-color: var(--white);
+}
+
+.admin-delete {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line-strong);
+  padding: 0.55rem 0.7rem;
+  white-space: nowrap;
+}
+
+.admin-delete:hover,
+.admin-delete:focus-visible {
+  color: var(--white);
+  border-color: var(--white);
+}
+
+.admin-delete:disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .sr-only {

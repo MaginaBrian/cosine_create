@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { fetchOrders, updateOrderStage } from "../api";
+import { fetchOrders, updateOrderStage, deleteOrder, downloadBlob } from "../api";
 import { GARMENTS, formatSizeRun } from "../measurements";
 import "./Portal.css";
 import "./Admin.css";
@@ -55,11 +55,11 @@ function groupByCompany(orders) {
   return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
 
-function OrderRows({ orders, savingId, onStageChange }) {
+function OrderRows({ orders, savingId, onStageChange, onDelete }) {
   if (!orders.length) {
     return (
       <tr>
-        <td colSpan={11}>No orders yet.</td>
+        <td colSpan={12}>No orders yet.</td>
       </tr>
     );
   }
@@ -94,6 +94,16 @@ function OrderRows({ orders, savingId, onStageChange }) {
             ))}
           </select>
         </label>
+      </td>
+      <td>
+        <button
+          type="button"
+          className="admin-delete"
+          disabled={savingId === o.id}
+          onClick={() => onDelete(o)}
+        >
+          Delete
+        </button>
       </td>
     </tr>
   ));
@@ -139,6 +149,26 @@ export default function Admin({ user, onLogout }) {
     }
   };
 
+  const onDelete = async (order) => {
+    const ok = window.confirm(
+      `Delete ${order.ref}? A completion PDF will download, then this order is removed.`
+    );
+    if (!ok) return;
+    setError("");
+    setNotice("");
+    setSavingId(order.id);
+    try {
+      const { blob, filename } = await deleteOrder(order.id);
+      downloadBlob(blob, filename);
+      setOrders((list) => list.filter((row) => row.id !== order.id));
+      setNotice(`${order.ref} completed and removed. ${filename} downloaded.`);
+    } catch (err) {
+      setError(err.message || "Could not delete order");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   return (
     <>
       <header className="page-head">
@@ -148,7 +178,8 @@ export default function Admin({ user, onLogout }) {
             <h1>All orders.</h1>
             <p className="page-head__lede">
               Signed in as {user?.name}. Open a company to see its orders. Production or Dispatch
-              shows on the client’s page as soon as you change it.
+              shows on the client’s page as soon as you change it. Delete a completed order to
+              download a completion PDF and remove it.
             </p>
           </div>
           <button type="button" className="btn" onClick={onLogout}>
@@ -203,6 +234,7 @@ export default function Admin({ user, onLogout }) {
                           <th>Apparel fabric</th>
                           <th>Notes</th>
                           <th>Stage</th>
+                          <th>Delete</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -210,6 +242,7 @@ export default function Admin({ user, onLogout }) {
                           orders={company.orders}
                           savingId={savingId}
                           onStageChange={onStageChange}
+                          onDelete={onDelete}
                         />
                       </tbody>
                     </table>

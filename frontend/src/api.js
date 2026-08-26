@@ -75,3 +75,31 @@ export function createOrder(payload) {
 export function updateOrderStage(orderId, stage) {
   return api(`/api/orders/${orderId}/stage`, { method: "PATCH", body: { stage } });
 }
+
+export async function deleteOrder(orderId) {
+  const headers = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`/api/orders/${orderId}`, { method: "DELETE", headers });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || res.statusText || "Could not delete order");
+  }
+
+  const blob = await res.blob();
+  const header = res.headers.get("Content-Disposition") || "";
+  const match = header.match(/filename="?([^"]+)"?/i);
+  return { blob, filename: match?.[1] || `CC-${String(orderId).padStart(4, "0")}-completed.pdf` };
+}
+
+export function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}

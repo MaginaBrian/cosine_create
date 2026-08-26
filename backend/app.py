@@ -1,8 +1,11 @@
-from flask import Flask, g, jsonify, request
+from flask import Flask, g, jsonify, request, send_file
 from flask_cors import CORS
 from sqlalchemy import inspect, text
+from io import BytesIO
+from pathlib import Path
 import json
 
+from completion_pdf import build_completion_pdf
 from config import Config
 from models import Order, Product, User, db
 from security import check_password, make_token, require_auth, require_role
@@ -74,7 +77,7 @@ def create_app():
         app,
         resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
         allow_headers=["Content-Type", "Authorization"],
-        methods=["GET", "POST", "PATCH", "OPTIONS"],
+        methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     )
 
     with app.app_context():
@@ -247,6 +250,29 @@ def register_routes(app):
         order.stage = stage
         db.session.commit()
         return jsonify({"order": order.to_public(include_user=True)})
+
+    @app.delete("/api/orders/<int:order_id>")
+    @require_auth
+    @require_role("admin")
+    def delete_order(order_id):
+        order = db.session.get(Order, order_id)
+        if order is None:
+            return jsonify({"error": "Order not found"}), 404
+
+        pdf_bytes, filename = build_completion_pdf(order)
+        completed_dir = Path(app.instance_path) / "completed"
+        completed_dir.mkdir(parents=True, exist_ok=True)
+        (completed_dir / filename).write_bytes(pdf_bytes)
+
+        db.session.delete(order)
+        db.session.commit()
+
+        return send_file(
+            BytesIO(pdf_bytes),
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=filename,
+        )
 
 
 app = create_app()
