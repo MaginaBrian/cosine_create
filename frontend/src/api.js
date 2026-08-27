@@ -76,6 +76,10 @@ export function fetchInquiries() {
   return api("/api/inquiries");
 }
 
+export function deleteInquiry(inquiryId) {
+  return api(`/api/inquiries/${inquiryId}`, { method: "DELETE" });
+}
+
 export function createOrder(payload) {
   return api("/api/orders", { method: "POST", body: payload });
 }

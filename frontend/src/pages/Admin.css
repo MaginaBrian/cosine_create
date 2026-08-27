@@ -203,13 +203,7 @@
 }
 
 .admin-table--leads {
-  min-width: 860px;
-}
-
-.admin-table--leads th:last-child,
-.admin-table--leads td:last-child {
-  position: static;
-  background: transparent;
+  min-width: 960px;
 }
 
 .sr-only {

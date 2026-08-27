@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { fetchOrders, fetchInquiries, updateOrderStage, deleteOrder, downloadBlob } from "../api";
+import { fetchOrders, fetchInquiries, deleteInquiry, updateOrderStage, deleteOrder, downloadBlob } from "../api";
 import { GARMENTS, formatSizeRun } from "../measurements";
 import "./Portal.css";
 import "./Admin.css";
@@ -123,6 +123,7 @@ export default function Admin({ user, onLogout }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [savingId, setSavingId] = useState(null);
+  const [savingInquiryId, setSavingInquiryId] = useState(null);
   const [openKeys, setOpenKeys] = useState(() => new Set());
   const primedCompanies = useRef(false);
 
@@ -178,6 +179,25 @@ export default function Admin({ user, onLogout }) {
       setError(err.message || "Could not delete order");
     } finally {
       setSavingId(null);
+    }
+  };
+
+  const onDeleteInquiry = async (row) => {
+    const ok = window.confirm(
+      `Delete ${row.brand} (${row.email})? This enquiry will be removed.`
+    );
+    if (!ok) return;
+    setError("");
+    setNotice("");
+    setSavingInquiryId(row.id);
+    try {
+      await deleteInquiry(row.id);
+      setInquiries((list) => list.filter((item) => item.id !== row.id));
+      setNotice(`${row.contact_name} removed from potential customers.`);
+    } catch (err) {
+      setError(err.message || "Could not delete enquiry");
+    } finally {
+      setSavingInquiryId(null);
     }
   };
 
@@ -284,6 +304,7 @@ export default function Admin({ user, onLogout }) {
                       <th>Qty</th>
                       <th>Where they are</th>
                       <th>The project</th>
+                      <th>Delete</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -299,6 +320,16 @@ export default function Admin({ user, onLogout }) {
                         <td>{row.quantity || "—"}</td>
                         <td>{INQUIRY_STAGES[row.stage] || row.stage}</td>
                         <td>{row.notes || "—"}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className="admin-delete"
+                            disabled={savingInquiryId === row.id}
+                            onClick={() => onDeleteInquiry(row)}
+                          >
+                            Delete
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

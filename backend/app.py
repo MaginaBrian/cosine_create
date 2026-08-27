@@ -316,6 +316,17 @@ def register_routes(app):
         rows = Inquiry.query.order_by(Inquiry.created_at.desc()).all()
         return jsonify({"inquiries": [row.to_public() for row in rows]})
 
+    @app.delete("/api/inquiries/<int:inquiry_id>")
+    @require_auth
+    @require_role("admin")
+    def delete_inquiry(inquiry_id):
+        inquiry = db.session.get(Inquiry, inquiry_id)
+        if inquiry is None:
+            return jsonify({"error": "Enquiry not found"}), 404
+        db.session.delete(inquiry)
+        db.session.commit()
+        return jsonify({"ok": True})
+
 
 app = create_app()
 
