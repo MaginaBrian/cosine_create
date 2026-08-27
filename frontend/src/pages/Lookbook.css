@@ -1,5 +1,5 @@
 .lookbook {
-  padding-inline: var(--gutter);
+  padding-inline: clamp(2rem, 8vw, 6.5rem);
   padding-bottom: clamp(3rem, 8vw, 6rem);
 }
 

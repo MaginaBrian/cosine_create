@@ -1,7 +1,7 @@
 export const SLIDES = [
   { src: "/people/hands.jpg", alt: "Cosine Create — studio" },
-  { src: "/work/mwotaji/cover.jpg", alt: "MWOTAJI — Essential Collection" },
   { src: "/work/solace.jpg", alt: "Cosine Textiles" },
+  { src: "/work/mwotaji/cover.jpg", alt: "MWOTAJI — Essential Collection" },
   { src: "/work/harbour.jpg", alt: "The Groove Hangout" },
 ];
 
@@ -208,6 +208,15 @@ export const PROJECTS = [
     looks: emptyLooks(),
   },
   {
+    slug: "cosine-textiles",
+    name: "Cosine Textiles",
+    client: "Cosine Textiles",
+    hook: "Fabric and textile work.",
+    credit: "Work done for Cosine Textiles",
+    image: "/work/solace.jpg",
+    looks: emptyLooks(),
+  },
+  {
     slug: "mwotaji",
     name: "Essential Collection",
     client: "MWOTAJI",
@@ -218,15 +227,6 @@ export const PROJECTS = [
     imageFit: "portrait",
     hero: "/work/mwotaji/hero.jpg",
     looks: mwotajiLooks,
-  },
-  {
-    slug: "cosine-textiles",
-    name: "Cosine Textiles",
-    client: "Cosine Textiles",
-    hook: "Fabric and textile work.",
-    credit: "Work done for Cosine Textiles",
-    image: "/work/solace.jpg",
-    looks: emptyLooks(),
   },
   {
     slug: "the-groove-hangout",

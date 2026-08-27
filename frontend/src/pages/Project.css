@@ -95,10 +95,10 @@
 .project-looks {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: clamp(0.75rem, 2vw, 1.5rem);
+  gap: clamp(1.25rem, 3vw, 2.25rem);
   max-width: 1280px;
   margin-inline: auto;
-  padding-inline: var(--gutter);
+  padding-inline: clamp(2rem, 8vw, 6.5rem);
   padding-top: clamp(2.25rem, 5vw, 3.75rem);
 }
 
@@ -146,7 +146,7 @@
 }
 
 .project-looks__frame {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 2 / 3;
   background: #141414;
   overflow: hidden;
 }
