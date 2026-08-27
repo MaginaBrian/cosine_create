@@ -67,7 +67,7 @@ function OrderRows({ orders, savingId, onStageChange, onDelete }) {
   if (!orders.length) {
     return (
       <tr>
-        <td colSpan={12}>No orders yet.</td>
+        <td colSpan={13}>No orders yet.</td>
       </tr>
     );
   }
@@ -80,6 +80,7 @@ function OrderRows({ orders, savingId, onStageChange, onDelete }) {
         <strong>{o.user?.name || o.contact_name}</strong>
         <span>{o.user?.email || o.email}</span>
       </td>
+      <td>{o.phone || "—"}</td>
       <td>{garmentLabel(o)}</td>
       <td>{o.quantity}</td>
       <td>{formatSizeRun(o.sizes) || "—"}</td>
@@ -258,6 +259,7 @@ export default function Admin({ user, onLogout }) {
                           <th>Date</th>
                           <th>Order no</th>
                           <th>Who</th>
+                          <th>Phone</th>
                           <th>Product</th>
                           <th>Qty</th>
                           <th>Size</th>
@@ -288,7 +290,7 @@ export default function Admin({ user, onLogout }) {
             <p className="eyebrow">Start a project</p>
             <h2>Potential customers.</h2>
             <p className="admin-leads__lede">
-              Anyone who fills in Start a project appears here — name, brand, and where they are.
+              Anyone who fills in Start a project appears here — name, phone, brand, and where they are.
             </p>
             {inquiries.length === 0 ? (
               <p className="admin-empty">No project enquiries yet.</p>
@@ -299,6 +301,7 @@ export default function Admin({ user, onLogout }) {
                     <tr>
                       <th>Date</th>
                       <th>Who</th>
+                      <th>Phone</th>
                       <th>Brand</th>
                       <th>Making</th>
                       <th>Qty</th>
@@ -315,6 +318,7 @@ export default function Admin({ user, onLogout }) {
                           <strong>{row.contact_name}</strong>
                           <span>{row.email}</span>
                         </td>
+                        <td>{row.phone || "—"}</td>
                         <td>{row.brand}</td>
                         <td>{row.making}</td>
                         <td>{row.quantity || "—"}</td>

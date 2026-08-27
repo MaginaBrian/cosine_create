@@ -30,6 +30,10 @@ function totalFromLines(lines) {
   return Object.values(linesToPayload(lines)).reduce((sum, n) => sum + n, 0);
 }
 
+function isPhone(value) {
+  return String(value || "").replace(/\D/g, "").length >= 7;
+}
+
 export default function OrderPanel({ user, slug, gender = null, categoryId = null }) {
   const lookGarments = useMemo(
     () => (categoryId ? garmentsForLook(slug, gender, categoryId) : garmentsForBrand(slug)),
@@ -39,10 +43,11 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [garmentId, setGarmentId] = useState(lookGarments[0]?.id || "");
-  const [fitGender, setFitGender] = useState(gender || lookGarments[0]?.genders[0] || "men");
+  const [fitGender, setFitGender] = useState(gender || "");
   const [sizeLines, setSizeLines] = useState(() => emptyLines(lookGarments[0]?.sizes));
   const [specs, setSpecs] = useState(() => emptySpecs(lookGarments[0]?.fields));
   const [notes, setNotes] = useState("");
+  const [phone, setPhone] = useState("");
   const [productId, setProductId] = useState("");
   const [simpleQty, setSimpleQty] = useState("");
   const [simpleColor, setSimpleColor] = useState("");
@@ -55,7 +60,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
     [products]
   );
 
-  const garment = lookGarments.find((g) => g.id === garmentId) || lookGarments[0];
+  const garment = lookGarments.find((g) => g.id === garmentId) || null;
   const isBottoms = garment?.category === "bottoms";
   const needsGender = Boolean(
     garment && !gender && (isBottoms || garment.genders.includes("men"))
@@ -87,13 +92,13 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
 
   useEffect(() => {
     if (!lookGarments.length) return;
-    if (lookGarments.some((g) => g.id === garmentId)) return;
+    if (garmentId && lookGarments.some((g) => g.id === garmentId)) return;
     const next = lookGarments[0];
     setGarmentId(next.id);
     setSizeLines(emptyLines(next.sizes));
     setSpecs(emptySpecs(next.fields));
     if (!gender) {
-      setFitGender(next.genders.includes("shared") ? "shared" : next.genders[0]);
+      setFitGender(next.genders.includes("shared") ? "shared" : "");
     }
   }, [lookGarments, garmentId, gender]);
 
@@ -103,39 +108,62 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
     setSpecs(emptySpecs(next.fields));
     setSent(false);
     if (!gender) {
-      setFitGender(next.genders.includes("shared") ? "shared" : next.genders[0]);
+      setFitGender(next.genders.includes("shared") ? "shared" : "");
     }
   };
 
   const onGarmentChange = (id) => {
+    if (!id) {
+      setGarmentId("");
+      setSizeLines(emptyLines([]));
+      setSpecs(emptySpecs([]));
+      if (!gender) setFitGender("");
+      setSent(false);
+      return;
+    }
     const next = lookGarments.find((g) => g.id === id);
     if (next) applyGarment(next);
   };
 
   const onFitChange = (value) => {
     setFitGender(value);
-    if (isBottoms || lookGarments.some((g) => g.category === "bottoms")) {
-      const match = lookGarments.find(
-        (g) => g.category === "bottoms" && g.genders.includes(value)
-      );
-      if (match && match.id !== garment?.id) applyGarment(match);
-    }
+    if (!isBottoms) return;
+    const match = lookGarments.find(
+      (g) => g.category === "bottoms" && g.genders.includes(value)
+    );
+    if (match && match.id !== garment?.id) applyGarment(match);
   };
 
   const onSubmitPom = async (e) => {
     e.preventDefault();
     setError("");
+    if (!garment) {
+      setError("Choose a product.");
+      return;
+    }
+    if (needsGender && !fitGender) {
+      setError(isBottoms ? "Choose male or female." : "Choose men or women.");
+      return;
+    }
+    if (sizeLines.some((line) => !line.size || Number(line.qty) < 1)) {
+      setError("Enter a size and a quantity of at least 1.");
+      return;
+    }
     const sizes = linesToPayload(sizeLines);
     const quantity = totalFromLines(sizeLines);
-    if (!garment || quantity < 1) {
+    if (quantity < 1) {
       setError("Add a quantity for at least one size.");
       return;
     }
     for (const field of garment.fields || []) {
-      if (field.required && !(specs[field.id] || "").trim()) {
+      if (!(specs[field.id] || "").trim()) {
         setError(`Write the ${field.label.toLowerCase()}.`);
         return;
       }
+    }
+    if (!isPhone(phone)) {
+      setError("Enter a phone number.");
+      return;
     }
     const chosenGender =
       gender ||
@@ -165,6 +193,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
         name: user.name,
         brand: user.brand,
         email: user.email,
+        phone: phone.trim(),
         making: "Apparel",
         quantity,
         stage: "produce",
@@ -190,12 +219,16 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
     e.preventDefault();
     setError("");
     const quantity = Number(simpleQty);
-    if (!productId || !quantity) {
-      setError("Choose a product and quantity.");
+    if (!productId || quantity < 1) {
+      setError("Choose a product and a quantity of at least 1.");
       return;
     }
     if (!simpleColor.trim()) {
       setError("Write the type of color.");
+      return;
+    }
+    if (!isPhone(phone)) {
+      setError("Enter a phone number.");
       return;
     }
     setBusy(true);
@@ -205,6 +238,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
         name: user.name,
         brand: user.brand,
         email: user.email,
+        phone: phone.trim(),
         making: "Apparel",
         quantity,
         stage: "produce",
@@ -244,9 +278,11 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
               <label htmlFor="order-garment">Product</label>
               <select
                 id="order-garment"
-                value={garment?.id || ""}
+                value={garmentId}
                 onChange={(e) => onGarmentChange(e.target.value)}
+                required
               >
+                <option value="">Select product</option>
                 {lookGarments.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name}
@@ -271,7 +307,9 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                 id="order-fit"
                 value={isBottoms ? garment?.genders[0] || fitGender : fitGender}
                 onChange={(e) => onFitChange(e.target.value)}
+                required
               >
+                <option value="">Select</option>
                 {isBottoms
                   ? lookGarments
                       .filter((g) => g.category === "bottoms")
@@ -280,7 +318,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                           {g.sex === "male" ? "Male" : "Female"}
                         </option>
                       ))
-                  : garment.genders
+                  : (garment.genders || [])
                       .filter((g) => g !== "shared")
                       .map((g) => (
                         <option key={g} value={g}>
@@ -315,7 +353,9 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                             )
                           )
                         }
+                        required
                       >
+                        {line.size ? null : <option value="">Select size</option>}
                         {options.map((s) => (
                           <option key={s} value={s}>
                             {s}
@@ -328,7 +368,8 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                       <input
                         id={`qty-${index}`}
                         type="number"
-                        min="0"
+                        min="1"
+                        step="1"
                         inputMode="numeric"
                         value={line.qty}
                         onChange={(e) =>
@@ -338,7 +379,8 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                             )
                           )
                         }
-                        placeholder="0"
+                        placeholder="1"
+                        required
                       />
                     </div>
                     {sizeLines.length > 1 ? (
@@ -380,7 +422,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                   id={`spec-${field.id}`}
                   value={specs[field.id] ?? ""}
                   onChange={(e) => setSpecs((s) => ({ ...s, [field.id]: e.target.value }))}
-                  required={field.required}
+                  required
                 >
                   <option value="">Select height</option>
                   {field.options.map((opt) => (
@@ -395,11 +437,23 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                   value={specs[field.id] ?? ""}
                   onChange={(e) => setSpecs((s) => ({ ...s, [field.id]: e.target.value }))}
                   placeholder={field.placeholder}
-                  required={field.required}
+                  required
                 />
               )}
             </div>
           ))}
+
+          <div className="field">
+            <label htmlFor="order-phone">Phone number</label>
+            <input
+              id="order-phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              autoComplete="tel"
+              required
+            />
+          </div>
 
           <div className="field">
             <label htmlFor="order-notes">Notes</label>
@@ -458,6 +512,17 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
               value={simpleColor}
               onChange={(e) => setSimpleColor(e.target.value)}
               placeholder="Write the colourway"
+              required
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="order-phone-simple">Phone number</label>
+            <input
+              id="order-phone-simple"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              autoComplete="tel"
               required
             />
           </div>

@@ -72,6 +72,7 @@ class Order(db.Model):
     contact_name = db.Column(db.String(120), nullable=False)
     brand = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(255), nullable=False)
+    phone = db.Column(db.String(40), nullable=True)
     making = db.Column(db.String(80), nullable=False, default="Apparel")
     quantity = db.Column(db.Integer, nullable=False)
     stage = db.Column(db.String(40), nullable=False)
@@ -110,6 +111,7 @@ class Order(db.Model):
             "brand": self.brand,
             "contact_name": self.contact_name,
             "email": self.email,
+            "phone": self.phone,
             "making": self.making,
             "quantity": self.quantity,
             "stage": self.stage,
@@ -133,6 +135,7 @@ class Inquiry(db.Model):
     contact_name = db.Column(db.String(120), nullable=False)
     brand = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(255), nullable=False)
+    phone = db.Column(db.String(40), nullable=True)
     making = db.Column(db.String(80), nullable=False, default="Apparel")
     quantity = db.Column(db.String(80), nullable=True)
     stage = db.Column(db.String(40), nullable=False)
@@ -150,6 +153,7 @@ class Inquiry(db.Model):
             "contact_name": self.contact_name,
             "brand": self.brand,
             "email": self.email,
+            "phone": self.phone,
             "making": self.making,
             "quantity": self.quantity,
             "stage": self.stage,

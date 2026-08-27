@@ -99,7 +99,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.82rem;
-  min-width: 1180px;
+  min-width: 1280px;
 }
 
 .admin-table th,
@@ -203,7 +203,7 @@
 }
 
 .admin-table--leads {
-  min-width: 960px;
+  min-width: 1100px;
 }
 
 .sr-only {

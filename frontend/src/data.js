@@ -1,10 +1,8 @@
 export const SLIDES = [
-  { src: "/work/atelier.jpg", alt: "Atelier — first sample run" },
-  { src: "/work/northline.jpg", alt: "Northline — shell in production" },
-  { src: "/work/harbour.jpg", alt: "Harbour — tote on the bench" },
-  { src: "/work/field.jpg", alt: "Field Notes — uniform rail" },
-  { src: "/work/solace.jpg", alt: "Solace — knit in the sample room" },
-  { src: "/work/kora.jpg", alt: "Kora — accessories still life" },
+  { src: "/people/hands.jpg", alt: "Cosine Create — studio" },
+  { src: "/work/mwotaji/cover.jpg", alt: "MWOTAJI — Essential Collection" },
+  { src: "/work/solace.jpg", alt: "Cosine Textiles" },
+  { src: "/work/harbour.jpg", alt: "The Groove Hangout" },
 ];
 
 export const STAGES = [
@@ -201,6 +199,15 @@ mwotajiLooks.shared.sweatshirts = {
 
 export const PROJECTS = [
   {
+    slug: "cosine-create",
+    name: "Studio",
+    client: "Cosine Create",
+    hook: "Work from our own studio.",
+    credit: "In house.",
+    image: "/people/hands.jpg",
+    looks: emptyLooks(),
+  },
+  {
     slug: "mwotaji",
     name: "Essential Collection",
     client: "MWOTAJI",
@@ -213,51 +220,21 @@ export const PROJECTS = [
     looks: mwotajiLooks,
   },
   {
-    slug: "atelier",
-    name: "Atelier Tee",
-    client: "Atelier",
-    hook: "First sample to a run under fifty.",
-    image: "/work/atelier.jpg",
-    looks: emptyLooks(),
-  },
-  {
-    slug: "northline",
-    name: "Northline Shell",
-    client: "Northline",
-    hook: "A first production under 150 units.",
-    image: "/work/northline.jpg",
-    looks: emptyLooks(),
-  },
-  {
-    slug: "harbour",
-    name: "Harbour Tote",
-    client: "Harbour",
-    hook: "Construction locked in sample, then a clean production run.",
-    image: "/work/harbour.jpg",
-    looks: emptyLooks(),
-  },
-  {
-    slug: "field-notes",
-    name: "Field Notes Uniform",
-    client: "Field Notes",
-    hook: "Spec to packed delivery, one QC standard.",
-    image: "/work/field.jpg",
-    looks: emptyLooks(),
-  },
-  {
-    slug: "solace",
-    name: "Solace Knit",
-    client: "Solace",
-    hook: "A small knit run to prove the silhouette.",
+    slug: "cosine-textiles",
+    name: "Cosine Textiles",
+    client: "Cosine Textiles",
+    hook: "Fabric and textile work.",
+    credit: "Work done for Cosine Textiles",
     image: "/work/solace.jpg",
     looks: emptyLooks(),
   },
   {
-    slug: "kora",
-    name: "Kora Goods",
-    client: "Kora",
-    hook: "Edge finish resolved in sample, then a low-quantity production.",
-    image: "/work/kora.jpg",
+    slug: "the-groove-hangout",
+    name: "The Groove Hangout",
+    client: "The Groove Hangout",
+    hook: "A hospitality run.",
+    credit: "Work done for The Groove Hangout",
+    image: "/work/harbour.jpg",
     looks: emptyLooks(),
   },
 ];

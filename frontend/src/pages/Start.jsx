@@ -3,13 +3,18 @@ import { createInquiry } from "../api";
 import { STAGES } from "../data";
 import "./Start.css";
 
+function isPhone(value) {
+  return String(value || "").replace(/\D/g, "").length >= 7;
+}
+
 const EMPTY = {
   name: "",
   brand: "",
   email: "",
-  product: "Apparel",
+  phone: "",
+  product: "",
   qty: "",
-  stage: "idea",
+  stage: "",
   notes: "",
 };
 
@@ -27,16 +32,30 @@ export default function Start() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (
+      !form.name.trim() ||
+      !form.brand.trim() ||
+      !form.email.trim() ||
+      !form.phone.trim() ||
+      !isPhone(form.phone) ||
+      !form.product ||
+      !form.qty.trim() ||
+      !form.stage
+    ) {
+      setError("Fill in every field except the project notes.");
+      return;
+    }
     setBusy(true);
     try {
       await createInquiry({
-        name: form.name,
-        brand: form.brand,
-        email: form.email,
+        name: form.name.trim(),
+        brand: form.brand.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
         making: form.product,
-        quantity: form.qty,
+        quantity: form.qty.trim(),
         stage: form.stage,
-        notes: form.notes,
+        notes: form.notes.trim(),
       });
       setSent(true);
     } catch (err) {
@@ -84,17 +103,41 @@ export default function Start() {
                     <input id="brand" name="brand" value={form.brand} onChange={onChange} required />
                   </div>
                 </div>
-                <div className="field">
-                  <label htmlFor="email">Email</label>
-                  <input id="email" name="email" type="email" value={form.email} onChange={onChange} required autoComplete="email" />
+                <div className="start__grid">
+                  <div className="field">
+                    <label htmlFor="email">Email</label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={form.email}
+                      onChange={onChange}
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="phone">Phone number</label>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={form.phone}
+                      onChange={onChange}
+                      required
+                      autoComplete="tel"
+                      inputMode="tel"
+                    />
+                  </div>
                 </div>
                 <div className="start__grid">
                   <div className="field">
                     <label htmlFor="product">What are you making?</label>
-                    <select id="product" name="product" value={form.product} onChange={onChange}>
-                      <option>Apparel</option>
-                      <option>Accessories</option>
-                      <option>Other</option>
+                    <select id="product" name="product" value={form.product} onChange={onChange} required>
+                      <option value="">Select</option>
+                      <option value="Apparel">Apparel</option>
+                      <option value="Accessories">Accessories</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                   <div className="field">
@@ -105,12 +148,14 @@ export default function Start() {
                       value={form.qty}
                       onChange={onChange}
                       placeholder="From 50"
+                      required
                     />
                   </div>
                 </div>
                 <div className="field">
                   <label htmlFor="stage">Where are you?</label>
-                  <select id="stage" name="stage" value={form.stage} onChange={onChange}>
+                  <select id="stage" name="stage" value={form.stage} onChange={onChange} required>
+                    <option value="">Select</option>
                     <option value="idea">I have an idea</option>
                     <option value="sample">I have a sample</option>
                     <option value="produce">Ready to produce</option>

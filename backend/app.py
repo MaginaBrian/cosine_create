@@ -38,26 +38,42 @@ def canonical_stage(value):
     return STAGE_ALIASES.get(key, key)
 
 
+def parse_phone(value):
+    phone = (value or "").strip()
+    digits = "".join(ch for ch in phone if ch.isdigit())
+    if len(digits) < 7 or len(phone) > 40:
+        return None
+    return phone
+
+
 def ensure_schema():
     inspector = inspect(db.engine)
-    if "orders" not in inspector.get_table_names():
-        return
-    cols = {col["name"] for col in inspector.get_columns("orders")}
+    tables = inspector.get_table_names()
     statements = []
-    if "garment" not in cols:
-        statements.append("ALTER TABLE orders ADD COLUMN garment VARCHAR(80)")
-    if "size_breakdown" not in cols:
-        statements.append("ALTER TABLE orders ADD COLUMN size_breakdown TEXT")
-    if "color" not in cols:
-        statements.append("ALTER TABLE orders ADD COLUMN color VARCHAR(120)")
-    if "height" not in cols:
-        statements.append("ALTER TABLE orders ADD COLUMN height VARCHAR(40)")
-    if "fabric" not in cols:
-        statements.append("ALTER TABLE orders ADD COLUMN fabric VARCHAR(200)")
+    if "orders" in tables:
+        cols = {col["name"] for col in inspector.get_columns("orders")}
+        if "garment" not in cols:
+            statements.append("ALTER TABLE orders ADD COLUMN garment VARCHAR(80)")
+        if "size_breakdown" not in cols:
+            statements.append("ALTER TABLE orders ADD COLUMN size_breakdown TEXT")
+        if "color" not in cols:
+            statements.append("ALTER TABLE orders ADD COLUMN color VARCHAR(120)")
+        if "height" not in cols:
+            statements.append("ALTER TABLE orders ADD COLUMN height VARCHAR(40)")
+        if "fabric" not in cols:
+            statements.append("ALTER TABLE orders ADD COLUMN fabric VARCHAR(200)")
+        if "phone" not in cols:
+            statements.append("ALTER TABLE orders ADD COLUMN phone VARCHAR(40)")
+    if "inquiries" in tables:
+        inq_cols = {col["name"] for col in inspector.get_columns("inquiries")}
+        if "phone" not in inq_cols:
+            statements.append("ALTER TABLE inquiries ADD COLUMN phone VARCHAR(40)")
     for sql in statements:
         db.session.execute(text(sql))
     if statements:
         db.session.commit()
+    if "orders" not in tables:
+        return
     db.session.execute(
         text(
             "UPDATE orders SET stage = 'produce' "
@@ -211,6 +227,9 @@ def register_routes(app):
             return jsonify({"error": "Height must be Short, Regular or Tall"}), 400
         fabric = (body.get("fabric") or "").strip() or None
         notes = (body.get("notes") or "").strip() or None
+        phone = parse_phone(body.get("phone"))
+        if not phone:
+            return jsonify({"error": "A phone number is required"}), 400
 
         order = Order(
             user_id=user.id,
@@ -219,6 +238,7 @@ def register_routes(app):
             contact_name=(body.get("name") or user.name).strip(),
             brand=(body.get("brand") or user.brand or "").strip(),
             email=(body.get("email") or user.email).strip().lower(),
+            phone=phone,
             making=(body.get("making") or "Apparel").strip() or "Apparel",
             quantity=quantity,
             stage=stage,
@@ -282,24 +302,28 @@ def register_routes(app):
         name = (body.get("name") or "").strip()
         brand = (body.get("brand") or "").strip()
         email = (body.get("email") or "").strip().lower()
-        making = (body.get("making") or body.get("product") or "Apparel").strip() or "Apparel"
-        quantity = (body.get("quantity") or body.get("qty") or "").strip() or None
-        stage = (body.get("stage") or "").strip() or "idea"
+        phone = parse_phone(body.get("phone"))
+        making = (body.get("making") or body.get("product") or "").strip()
+        quantity = (body.get("quantity") or body.get("qty") or "").strip()
+        stage = (body.get("stage") or "").strip()
         notes = (body.get("notes") or "").strip() or None
 
-        if not name or not brand or not email:
-            return jsonify({"error": "name, brand, and email are required"}), 400
-        if making not in INQUIRY_MAKING:
+        if not name or not brand or not email or not phone:
+            return jsonify({"error": "name, brand, email, and phone are required"}), 400
+        if not making or making not in INQUIRY_MAKING:
             return jsonify({"error": "What you are making must be Apparel, Accessories or Other"}), 400
-        if stage not in INQUIRY_STAGES:
-            return jsonify({"error": "Unknown project stage"}), 400
-        if quantity and len(quantity) > 80:
+        if not quantity:
+            return jsonify({"error": "Approximate quantity is required"}), 400
+        if len(quantity) > 80:
             return jsonify({"error": "quantity is too long"}), 400
+        if not stage or stage not in INQUIRY_STAGES:
+            return jsonify({"error": "Unknown project stage"}), 400
 
         inquiry = Inquiry(
             contact_name=name,
             brand=brand,
             email=email,
+            phone=phone,
             making=making,
             quantity=quantity,
             stage=stage,

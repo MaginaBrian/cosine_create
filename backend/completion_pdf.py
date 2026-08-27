@@ -83,6 +83,7 @@ def build_completion_pdf(order):
         ("Brand", order.brand),
         ("Contact", order.contact_name),
         ("Email", order.email),
+        ("Phone", getattr(order, "phone", None)),
         ("Product", _product_name(order)),
         ("Quantity", f"{order.quantity} pcs"),
         ("Size", _size_run(order)),
