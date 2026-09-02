@@ -227,7 +227,7 @@ export const PROJECTS = [
     client: "The Groove Hangout",
     hook: "A hospitality run.",
     credit: "Work done for The Groove Hangout",
-    image: "/work/harbour.jpg",
+    image: "/work/groove-hangout.jpg",
     heroVideo: "/videos/groove-hangout.mp4?v=2",
     looks: emptyLooks(),
   },
