@@ -1,4 +1,4 @@
-import HeroSlider from "../components/HeroSlider";
+import HeroVideo from "../components/HeroVideo";
 import WorkGrid from "../components/WorkGrid";
 import { PROJECTS } from "../data";
 import "./Home.css";
@@ -6,7 +6,7 @@ import "./Home.css";
 export default function Home() {
   return (
     <>
-      <HeroSlider />
+      <HeroVideo />
 
       <section id="work" className="home-work">
         <WorkGrid projects={PROJECTS} />

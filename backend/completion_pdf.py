@@ -46,11 +46,28 @@ def _size_run(order):
 
 
 def _product_name(order):
+    mill = getattr(order, "mill_line", None)
+    if mill:
+        bits = [mill.kind.replace("/", " / ").title(), mill.composition_label()]
+        if mill.gsm:
+            bits.append(f"{mill.gsm} GSM")
+        if mill.code:
+            bits.insert(0, mill.code)
+        return " · ".join(bits)
     if order.garment and order.garment in GARMENT_NAMES:
         return GARMENT_NAMES[order.garment]
     if order.product:
         return order.product.name
     return "-"
+
+
+def _quantity(order):
+    unit = getattr(order, "unit", None)
+    if unit == "kg":
+        return f"{order.quantity} kg"
+    if unit == "m" or getattr(order, "fabric_id", None):
+        return f"{order.quantity} m"
+    return f"{order.quantity} pcs"
 
 
 def build_completion_pdf(order):
@@ -85,7 +102,7 @@ def build_completion_pdf(order):
         ("Email", order.email),
         ("Phone", getattr(order, "phone", None)),
         ("Product", _product_name(order)),
-        ("Quantity", f"{order.quantity} pcs"),
+        ("Quantity", _quantity(order)),
         ("Size", _size_run(order)),
         ("Color", order.color),
         ("Height", order.height),

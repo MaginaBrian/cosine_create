@@ -1,10 +1,3 @@
-export const SLIDES = [
-  { src: "/people/hands.jpg", alt: "Cosine Create — studio" },
-  { src: "/work/solace.jpg", alt: "Cosine Textiles" },
-  { src: "/work/mwotaji/cover.jpg", alt: "MWOTAJI — Essential Collection" },
-  { src: "/work/harbour.jpg", alt: "The Groove Hangout" },
-];
-
 export const STAGES = [
   {
     id: "01",
@@ -235,6 +228,7 @@ export const PROJECTS = [
     hook: "A hospitality run.",
     credit: "Work done for The Groove Hangout",
     image: "/work/harbour.jpg",
+    heroVideo: "/videos/groove-hangout.mp4?v=2",
     looks: emptyLooks(),
   },
 ];

@@ -32,6 +32,22 @@
   object-position: center 18%;
 }
 
+.project-hero__bg--video {
+  object-position: center;
+}
+
+.project-hero__sound {
+  position: absolute;
+  left: var(--gutter);
+  bottom: 1.35rem;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--white);
+}
+
 .project-hero--photo::after {
   content: "";
   position: absolute;
@@ -159,6 +175,11 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.textiles-load-error {
+  color: var(--muted);
+  padding-block: 2rem;
 }
 
 @media (max-width: 720px) {

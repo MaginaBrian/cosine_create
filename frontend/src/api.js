@@ -64,6 +64,10 @@ export function fetchProducts() {
   return api("/api/products");
 }
 
+export function fetchFabrics() {
+  return api("/api/fabrics");
+}
+
 export function fetchOrders() {
   return api("/api/orders");
 }

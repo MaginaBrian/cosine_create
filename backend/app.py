@@ -7,7 +7,7 @@ import json
 
 from completion_pdf import build_completion_pdf
 from config import Config
-from models import Inquiry, Order, Product, User, db
+from models import Fabric, Inquiry, Order, Product, User, db
 from security import check_password, make_token, require_auth, require_role
 
 ADMIN_MOVE_STAGES = ("produce", "distribute")
@@ -31,6 +31,7 @@ GARMENT_IDS = {
 HEIGHTS = {"Short", "Regular", "Tall"}
 INQUIRY_MAKING = {"Apparel", "Accessories", "Other"}
 INQUIRY_STAGES = {"idea", "sample", "produce", "buy", "reorder"}
+FABRIC_UNITS = {"m", "kg"}
 
 
 def canonical_stage(value):
@@ -64,6 +65,10 @@ def ensure_schema():
             statements.append("ALTER TABLE orders ADD COLUMN fabric VARCHAR(200)")
         if "phone" not in cols:
             statements.append("ALTER TABLE orders ADD COLUMN phone VARCHAR(40)")
+        if "fabric_id" not in cols:
+            statements.append("ALTER TABLE orders ADD COLUMN fabric_id INTEGER")
+        if "unit" not in cols:
+            statements.append("ALTER TABLE orders ADD COLUMN unit VARCHAR(20)")
     if "inquiries" in tables:
         inq_cols = {col["name"] for col in inspector.get_columns("inquiries")}
         if "phone" not in inq_cols:
@@ -101,6 +106,9 @@ def create_app():
     with app.app_context():
         db.create_all()
         ensure_schema()
+        from seed import ensure_textiles
+
+        ensure_textiles()
 
     register_routes(app)
     register_cli(app)
@@ -119,6 +127,160 @@ def register_cli(app):
         for row in creds:
             print(f"  {row['email']}  /  {row['password']}  ({row['role']}"
                   f"{', ' + row['brand'] if row['brand'] else ''})")
+
+
+def textiles_catalog_product():
+    from seed import ensure_textiles_catalog_product
+
+    return ensure_textiles_catalog_product()
+
+
+def create_garment_order(user, body):
+    product_id = body.get("product_id")
+    if product_id is None:
+        return jsonify({"error": "product_id is required"}), 400
+
+    product = db.session.get(Product, product_id)
+    if product is None:
+        return jsonify({"error": "Product not found"}), 404
+    if product.client_slug != user.client_slug:
+        return jsonify({"error": "You can only order products from your catalog"}), 403
+
+    try:
+        quantity = int(body.get("quantity"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "quantity must be a number"}), 400
+    if quantity < 1:
+        return jsonify({"error": "quantity must be at least 1"}), 400
+
+    sizes = body.get("sizes")
+    size_breakdown = None
+    if sizes is not None:
+        if not isinstance(sizes, dict):
+            return jsonify({"error": "sizes must be an object of size to quantity"}), 400
+        cleaned = {}
+        total = 0
+        for size, qty in sizes.items():
+            label = str(size).strip()[:8]
+            try:
+                n = int(qty)
+            except (TypeError, ValueError):
+                return jsonify({"error": f"invalid quantity for size {size}"}), 400
+            if n < 0:
+                return jsonify({"error": "size quantities cannot be negative"}), 400
+            if n:
+                cleaned[label] = n
+                total += n
+        if total < 1:
+            return jsonify({"error": "add a quantity for at least one size"}), 400
+        quantity = total
+        size_breakdown = json.dumps(cleaned)
+
+    garment = (body.get("garment") or "").strip() or None
+    if garment and garment not in GARMENT_IDS:
+        return jsonify({"error": "Unknown garment"}), 400
+
+    stage = canonical_stage(body.get("stage") or "produce")
+    if stage not in ADMIN_MOVE_STAGES:
+        return jsonify({"error": "Stage must be production or dispatch"}), 400
+
+    color = (body.get("color") or "").strip() or None
+    height = (body.get("height") or "").strip() or None
+    if height and height not in HEIGHTS:
+        return jsonify({"error": "Height must be Short, Regular or Tall"}), 400
+    fabric = (body.get("fabric") or "").strip() or None
+    notes = (body.get("notes") or "").strip() or None
+    phone = parse_phone(body.get("phone"))
+    if not phone:
+        return jsonify({"error": "A phone number is required"}), 400
+
+    order = Order(
+        user_id=user.id,
+        product_id=product.id,
+        client_slug=user.client_slug,
+        contact_name=(body.get("name") or user.name).strip(),
+        brand=(body.get("brand") or user.brand or "").strip(),
+        email=(body.get("email") or user.email).strip().lower(),
+        phone=phone,
+        making=(body.get("making") or "Apparel").strip() or "Apparel",
+        quantity=quantity,
+        stage=stage,
+        notes=notes,
+        garment=garment,
+        size_breakdown=size_breakdown,
+        color=color,
+        height=height,
+        fabric=fabric,
+        unit="pcs",
+    )
+    if not order.contact_name or not order.brand or not order.email:
+        return jsonify({"error": "name, brand, and email are required"}), 400
+
+    db.session.add(order)
+    db.session.commit()
+    return jsonify({"order": order.to_public()}), 201
+
+
+def create_fabric_order(user, body):
+    fabric_id = body.get("fabric_id")
+    if fabric_id is None:
+        return jsonify({"error": "Choose a fabric line"}), 400
+
+    mill_line = db.session.get(Fabric, fabric_id)
+    if mill_line is None:
+        return jsonify({"error": "Fabric not found"}), 404
+
+    try:
+        quantity = int(body.get("quantity"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "quantity must be a number"}), 400
+    if quantity < 1:
+        return jsonify({"error": "quantity must be at least 1"}), 400
+
+    unit = (body.get("unit") or "m").strip().lower()
+    if unit in ("meter", "metre", "meters", "metres"):
+        unit = "m"
+    if unit not in FABRIC_UNITS:
+        return jsonify({"error": "Quantity unit must be metres or kg"}), 400
+
+    stage = canonical_stage(body.get("stage") or "produce")
+    if stage not in ADMIN_MOVE_STAGES:
+        return jsonify({"error": "Stage must be production or dispatch"}), 400
+
+    color = (body.get("color") or "").strip() or None
+    notes = (body.get("notes") or "").strip() or None
+    phone = parse_phone(body.get("phone"))
+    if not phone:
+        return jsonify({"error": "A phone number is required"}), 400
+
+    product = textiles_catalog_product()
+    snapshot = mill_line.composition_label()
+    if mill_line.gsm:
+        snapshot = f"{snapshot} · {mill_line.gsm} GSM" if snapshot != "—" else f"{mill_line.gsm} GSM"
+
+    order = Order(
+        user_id=user.id,
+        product_id=product.id,
+        fabric_id=mill_line.id,
+        client_slug=user.client_slug or "cosine-textiles",
+        contact_name=(body.get("name") or user.name).strip(),
+        brand=(body.get("brand") or user.brand or "Cosine Textiles").strip(),
+        email=(body.get("email") or user.email).strip().lower(),
+        phone=phone,
+        making="Textiles",
+        quantity=quantity,
+        stage=stage,
+        notes=notes,
+        color=color,
+        fabric=snapshot,
+        unit=unit,
+    )
+    if not order.contact_name or not order.brand or not order.email:
+        return jsonify({"error": "name, brand, and email are required"}), 400
+
+    db.session.add(order)
+    db.session.commit()
+    return jsonify({"order": order.to_public()}), 201
 
 
 def register_routes(app):
@@ -147,6 +309,7 @@ def register_routes(app):
 
     @app.get("/api/products")
     @require_auth
+    @require_role("client", "admin")
     def products():
         user = g.current_user
         query = Product.query.order_by(Product.client_slug, Product.sku_kind, Product.name)
@@ -154,13 +317,33 @@ def register_routes(app):
             query = query.filter_by(client_slug=user.client_slug)
         return jsonify({"products": [p.to_public() for p in query.all()]})
 
+    @app.get("/api/fabrics")
+    @require_auth
+    @require_role("buyer", "admin")
+    def fabrics():
+        user = g.current_user
+        rows = Fabric.query.order_by(Fabric.kind, Fabric.gsm, Fabric.code, Fabric.id).all()
+        if user.role == "admin":
+            return jsonify({"fabrics": [row.to_admin() for row in rows]})
+
+        seen = set()
+        unique = []
+        for row in rows:
+            key = (row.kind, row.composition_json, row.gsm)
+            if key in seen:
+                continue
+            seen.add(key)
+            unique.append(row.to_buyer())
+        return jsonify({"fabrics": unique})
+
     @app.get("/api/orders")
     @require_auth
+    @require_role("client", "admin", "buyer")
     def list_orders():
         user = g.current_user
         query = Order.query.order_by(Order.created_at.desc())
         include_user = user.role == "admin"
-        if user.role == "client":
+        if user.role in ("client", "buyer"):
             query = query.filter_by(user_id=user.id)
         return jsonify(
             {"orders": [o.to_public(include_user=include_user) for o in query.all()]}
@@ -168,93 +351,13 @@ def register_routes(app):
 
     @app.post("/api/orders")
     @require_auth
-    @require_role("client")
+    @require_role("client", "buyer")
     def create_order():
         user = g.current_user
         body = request.get_json(silent=True) or {}
-
-        product_id = body.get("product_id")
-        if product_id is None:
-            return jsonify({"error": "product_id is required"}), 400
-
-        product = db.session.get(Product, product_id)
-        if product is None:
-            return jsonify({"error": "Product not found"}), 404
-        if product.client_slug != user.client_slug:
-            return jsonify({"error": "You can only order products from your catalog"}), 403
-
-        try:
-            quantity = int(body.get("quantity"))
-        except (TypeError, ValueError):
-            return jsonify({"error": "quantity must be a number"}), 400
-        if quantity < 1:
-            return jsonify({"error": "quantity must be at least 1"}), 400
-
-        sizes = body.get("sizes")
-        size_breakdown = None
-        if sizes is not None:
-            if not isinstance(sizes, dict):
-                return jsonify({"error": "sizes must be an object of size to quantity"}), 400
-            cleaned = {}
-            total = 0
-            for size, qty in sizes.items():
-                label = str(size).strip()[:8]
-                try:
-                    n = int(qty)
-                except (TypeError, ValueError):
-                    return jsonify({"error": f"invalid quantity for size {size}"}), 400
-                if n < 0:
-                    return jsonify({"error": "size quantities cannot be negative"}), 400
-                if n:
-                    cleaned[label] = n
-                    total += n
-            if total < 1:
-                return jsonify({"error": "add a quantity for at least one size"}), 400
-            quantity = total
-            size_breakdown = json.dumps(cleaned)
-
-        garment = (body.get("garment") or "").strip() or None
-        if garment and garment not in GARMENT_IDS:
-            return jsonify({"error": "Unknown garment"}), 400
-
-        stage = canonical_stage(body.get("stage") or "produce")
-        if stage not in ADMIN_MOVE_STAGES:
-            return jsonify({"error": "Stage must be production or dispatch"}), 400
-
-        color = (body.get("color") or "").strip() or None
-        height = (body.get("height") or "").strip() or None
-        if height and height not in HEIGHTS:
-            return jsonify({"error": "Height must be Short, Regular or Tall"}), 400
-        fabric = (body.get("fabric") or "").strip() or None
-        notes = (body.get("notes") or "").strip() or None
-        phone = parse_phone(body.get("phone"))
-        if not phone:
-            return jsonify({"error": "A phone number is required"}), 400
-
-        order = Order(
-            user_id=user.id,
-            product_id=product.id,
-            client_slug=user.client_slug,
-            contact_name=(body.get("name") or user.name).strip(),
-            brand=(body.get("brand") or user.brand or "").strip(),
-            email=(body.get("email") or user.email).strip().lower(),
-            phone=phone,
-            making=(body.get("making") or "Apparel").strip() or "Apparel",
-            quantity=quantity,
-            stage=stage,
-            notes=notes,
-            garment=garment,
-            size_breakdown=size_breakdown,
-            color=color,
-            height=height,
-            fabric=fabric,
-        )
-        if not order.contact_name or not order.brand or not order.email:
-            return jsonify({"error": "name, brand, and email are required"}), 400
-
-        db.session.add(order)
-        db.session.commit()
-        return jsonify({"order": order.to_public()}), 201
+        if user.role == "buyer":
+            return create_fabric_order(user, body)
+        return create_garment_order(user, body)
 
     @app.patch("/api/orders/<int:order_id>/stage")
     @require_auth

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchOrders, fetchInquiries, deleteInquiry, updateOrderStage, deleteOrder, downloadBlob } from "../api";
 import { GARMENTS, formatSizeRun } from "../measurements";
+import { lineSummary, quantityLabel } from "../textiles";
 import "./Portal.css";
 import "./Admin.css";
 
@@ -18,6 +19,13 @@ const INQUIRY_STAGES = {
 };
 
 function garmentLabel(order) {
+  if (order.fabric_line || order.fabric_id) {
+    const mill = order.fabric_line?.code
+      ? `${order.fabric_line.supplier ? `${order.fabric_line.supplier} ` : ""}${order.fabric_line.code}`
+      : "";
+    const summary = lineSummary(order.fabric_line) || order.fabric || "Fabric";
+    return mill ? `${mill} · ${summary}` : summary;
+  }
   const match = GARMENTS.find((g) => g.id === order.garment);
   return match?.name || order.product?.name || "—";
 }
@@ -82,7 +90,7 @@ function OrderRows({ orders, savingId, onStageChange, onDelete }) {
       </td>
       <td>{o.phone || "—"}</td>
       <td>{garmentLabel(o)}</td>
-      <td>{o.quantity}</td>
+      <td>{quantityLabel(o)}</td>
       <td>{formatSizeRun(o.sizes) || "—"}</td>
       <td>{o.color || "—"}</td>
       <td>{o.height || "—"}</td>

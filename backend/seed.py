@@ -1,4 +1,7 @@
-from models import Order, Product, User, db
+import json
+
+from fabrics_data import BUYER_CREDENTIAL, FABRIC_ROWS
+from models import Fabric, Order, Product, User, db
 from security import hash_password
 
 SEED_CREDENTIALS = [
@@ -26,6 +29,7 @@ SEED_CREDENTIALS = [
         "brand": "Atelier",
         "client_slug": "atelier",
     },
+    BUYER_CREDENTIAL,
 ]
 
 MWOTAJI_CATEGORIES = [
@@ -57,6 +61,69 @@ def _add_product(**kwargs):
     product = Product(**kwargs)
     db.session.add(product)
     return product
+
+
+def load_fabrics():
+    for row in FABRIC_ROWS:
+        db.session.add(
+            Fabric(
+                supplier=row["supplier"],
+                code=row["code"],
+                kind=row["kind"],
+                composition_json=json.dumps(row["fibres"]),
+                gsm=row["gsm"],
+                price_kg_cny=row["price_kg_cny"],
+                price_kg_kes=row["price_kg_kes"],
+                price_kg_cosintex=row["price_kg_cosintex"],
+                price_m_cny=row["price_m_cny"],
+                price_m_kes=row["price_m_kes"],
+                price_m_cosintex=row["price_m_cosintex"],
+                usage=row["usage"] or None,
+                colors_json=json.dumps(row["colors"]),
+            )
+        )
+
+
+def ensure_textiles_catalog_product():
+    product = Product.query.filter_by(client_slug="cosine-textiles", slug="fabric").first()
+    if product is None:
+        product = Product(
+            client_slug="cosine-textiles",
+            brand="Cosine Textiles",
+            slug="fabric",
+            name="Fabric",
+            category="textiles",
+            gender="shared",
+            sku_kind="category",
+        )
+        db.session.add(product)
+        db.session.flush()
+    return product
+
+
+def ensure_textiles():
+    """Add buyer + mill list without wiping existing orders."""
+    buyer = User.query.filter_by(email=BUYER_CREDENTIAL["email"]).first()
+    if buyer is None:
+        db.session.add(
+            User(
+                email=BUYER_CREDENTIAL["email"].lower(),
+                password_hash=hash_password(BUYER_CREDENTIAL["password"]),
+                name=BUYER_CREDENTIAL["name"],
+                role="buyer",
+                brand=BUYER_CREDENTIAL["brand"],
+                client_slug=BUYER_CREDENTIAL["client_slug"],
+            )
+        )
+    else:
+        buyer.name = BUYER_CREDENTIAL["name"]
+        buyer.brand = BUYER_CREDENTIAL["brand"]
+        buyer.role = "buyer"
+        buyer.client_slug = BUYER_CREDENTIAL["client_slug"]
+    ensure_textiles_catalog_product()
+    if Fabric.query.count() == 0:
+        load_fabrics()
+    db.session.commit()
 
 
 def seed_database():
@@ -112,6 +179,9 @@ def seed_database():
                 look_ref=look_ref,
                 sku_kind="look",
             )
+
+    load_fabrics()
+    ensure_textiles_catalog_product()
 
     atelier_products = {}
     for slug, name, category, gender, look_ref in ATELIER_PRODUCTS:

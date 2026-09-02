@@ -39,7 +39,8 @@ export default function Login({ user, onLogin }) {
           <p className="eyebrow">Client access</p>
           <h1>Sign in to your studio.</h1>
           <p className="page-head__lede">
-            Clients order against their own catalog. The public site stays public — this is only for the work in motion.
+            Clients order against their own catalog. Textile buyers open Cosine Textiles. The public
+            site stays public — this is only for the work in motion.
           </p>
         </div>
       </header>

@@ -106,7 +106,8 @@ export default function Navbar({ path, user, onLogout }) {
                   aria-current={
                     path === "/studio" ||
                     path === "/account" ||
-                    (user?.client_slug && path === `/work/${user.client_slug}`)
+                    (user?.client_slug && path === `/work/${user.client_slug}`) ||
+                    (user?.role === "buyer" && path.startsWith("/work/cosine-textiles"))
                       ? "page"
                       : undefined
                   }
