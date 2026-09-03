@@ -172,7 +172,21 @@ export default function Project({ slug, user }) {
         <HeroBackground image={project.hero} video={project.heroVideo} />
         <div className="project-hero__copy">
           <h1>{project.client}</h1>
-          {project.hook ? <p className="project-hero__hook">{project.hook}</p> : null}
+          {project.hook ? (
+            project.hookStyle === "edition" ? (
+              <p className="project-hero__hook project-hero__hook--edition">
+                <span className="project-hero__edition-rule" aria-hidden="true" />
+                <span className="project-hero__edition">
+                  <span className="project-hero__edition-num">7</span>
+                  <sup>th</sup>
+                  <span className="project-hero__edition-label">edition</span>
+                </span>
+                <span className="project-hero__edition-rule" aria-hidden="true" />
+              </p>
+            ) : (
+              <p className="project-hero__hook">{project.hook}</p>
+            )
+          ) : null}
           {project.gallery ? (
             <p className="project-hero__credit">
               <a href={project.gallery} target="_blank" rel="noreferrer">
