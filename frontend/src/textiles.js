@@ -22,8 +22,56 @@ export const KIND_LABELS = {
   "OUTDOOR JACKET": "Outdoor jacket",
 };
 
+export const KIND_SLUGS = {
+  "T-SHIRT": "t-shirt",
+  FLEECE: "fleece",
+  LINEN: "linen",
+  "SPORTS/POLO": "sports-polo",
+  "WORKOUT TEE": "workout-tee",
+  LEGGING: "legging",
+  WOOL: "wool",
+  "SPORTS/ JACKET": "sports-jacket",
+  "OUTDOOR JACKET": "outdoor-jacket",
+};
+
+export const FIBRE_ORDER = [
+  "cotton",
+  "polyester",
+  "spandex",
+  "nylon",
+  "linen",
+  "tencel",
+  "wool",
+  "modal",
+  "other",
+];
+
+export const FIBRE_LABELS = {
+  cotton: "Cotton",
+  polyester: "Polyester",
+  spandex: "Spandex",
+  nylon: "Nylon",
+  linen: "Linen",
+  tencel: "Tencel",
+  wool: "Wool",
+  modal: "Modal",
+  other: "Other",
+};
+
 export function kindLabel(kind) {
   return KIND_LABELS[kind] || kind;
+}
+
+export function kindSlug(kind) {
+  return KIND_SLUGS[kind] || String(kind || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+}
+
+export function kindFromSlug(slug) {
+  return Object.keys(KIND_SLUGS).find((kind) => KIND_SLUGS[kind] === slug) || null;
+}
+
+export function kindCover(kind) {
+  return `/textiles/${kindSlug(kind)}.jpg`;
 }
 
 export function formatGsm(gsm) {
@@ -67,12 +115,63 @@ export function groupFabrics(fabrics) {
   const ordered = KIND_ORDER.filter((kind) => groups.has(kind)).map((kind) => ({
     kind,
     label: kindLabel(kind),
+    slug: kindSlug(kind),
+    cover: kindCover(kind),
     fabrics: groups.get(kind),
   }));
   for (const [kind, rows] of groups) {
     if (!KIND_ORDER.includes(kind)) {
-      ordered.push({ kind, label: kindLabel(kind), fabrics: rows });
+      ordered.push({
+        kind,
+        label: kindLabel(kind),
+        slug: kindSlug(kind),
+        cover: kindCover(kind),
+        fabrics: rows,
+      });
     }
   }
   return ordered;
+}
+
+export function fibresOf(fabric) {
+  if (fabric?.fibres && typeof fabric.fibres === "object") return fabric.fibres;
+  const out = {};
+  for (const part of String(fabric?.composition || "").split("·")) {
+    const match = part.trim().match(/^(\d+)%\s+(.+)$/i);
+    if (match) out[match[2].toLowerCase()] = Number(match[1]);
+  }
+  return out;
+}
+
+export function formatSpan(min, max, suffix) {
+  if (min == null || max == null) return "—";
+  if (min === max) return `${min}${suffix}`;
+  return `${min} — ${max}${suffix}`;
+}
+
+export function rangesForKind(fabrics) {
+  const rows = fabrics || [];
+  const present = new Set();
+  for (const row of rows) {
+    Object.keys(fibresOf(row)).forEach((key) => present.add(key));
+  }
+  const fibres = FIBRE_ORDER.filter((key) => present.has(key))
+    .map((key) => {
+      const values = rows.map((row) => Number(fibresOf(row)[key] || 0));
+      return {
+        key,
+        label: FIBRE_LABELS[key] || key,
+        min: Math.min(...values),
+        max: Math.max(...values),
+      };
+    })
+    .filter((row) => row.max > 0);
+
+  const gsmValues = rows.map((row) => row.gsm).filter((value) => value != null);
+  return {
+    fibres,
+    gsm: gsmValues.length
+      ? { min: Math.min(...gsmValues), max: Math.max(...gsmValues) }
+      : null,
+  };
 }

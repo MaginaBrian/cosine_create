@@ -11,6 +11,7 @@ import Process from "./pages/Process";
 import Work from "./pages/Work";
 import Project from "./pages/Project";
 import Lookbook from "./pages/Lookbook";
+import TextileKind from "./pages/TextileKind";
 import Start from "./pages/Start";
 import Login from "./pages/Login";
 import Studio from "./pages/Studio";
@@ -70,7 +71,9 @@ export default function App() {
     const gender = workParts[2] === "men" || workParts[2] === "women" ? workParts[2] : null;
     const categoryId = gender ? workParts[3] : workParts[2];
 
-    if (categoryId) {
+    if (slug === "cosine-textiles" && workParts[2]) {
+      page = <TextileKind kindSlug={decodeURIComponent(workParts[2])} user={user} />;
+    } else if (categoryId) {
       page = <Lookbook slug={slug} gender={gender} categoryId={categoryId} user={user} />;
     } else {
       page = <Project slug={slug} user={user} />;

@@ -10,7 +10,8 @@ function isPhone(value) {
 export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) {
   const [orders, setOrders] = useState([]);
   const [quantity, setQuantity] = useState("");
-  const [unit, setUnit] = useState("m");
+  const [color, setColor] = useState("");
+  const [rib, setRib] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
@@ -50,7 +51,11 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
     }
     const qty = Number(quantity);
     if (qty < 1) {
-      setError("Enter a quantity of at least 1.");
+      setError("Enter a quantity of at least 1 kg.");
+      return;
+    }
+    if (!color.trim()) {
+      setError("Write the colour.");
       return;
     }
     if (!isPhone(phone)) {
@@ -66,12 +71,16 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
         email: user.email,
         phone: phone.trim(),
         quantity: qty,
-        unit,
+        unit: "kg",
+        color: color.trim(),
+        rib: rib.trim() || undefined,
         stage: "produce",
         notes: notes.trim() || undefined,
       });
       setSent(true);
       setQuantity("");
+      setColor("");
+      setRib("");
       setNotes("");
       await load();
     } catch (err) {
@@ -87,8 +96,8 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
         <p className="eyebrow">Fabric order</p>
         <h2>Order a line.</h2>
         <p>
-          Choose a fabric from the list, set metres or kilos, and send. The studio sees it on the
-          admin orders list. Public visitors do not see this.
+          Choose a fabric from the list, set the kilos, colour and rib, and send. The studio sees it
+          on the admin orders list. Public visitors do not see this.
         </p>
       </div>
 
@@ -116,28 +125,42 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
 
         {selected ? <p className="order-panel__garment">{lineSummary(selected)}</p> : null}
 
-        <div className="order-size">
-          <div className="field">
-            <label htmlFor="fabric-qty">Quantity</label>
-            <input
-              id="fabric-qty"
-              type="number"
-              min="1"
-              step="1"
-              inputMode="numeric"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              placeholder="1"
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="fabric-unit">Unit</label>
-            <select id="fabric-unit" value={unit} onChange={(e) => setUnit(e.target.value)}>
-              <option value="m">Metres</option>
-              <option value="kg">Kilograms</option>
-            </select>
-          </div>
+        <div className="field">
+          <label htmlFor="fabric-qty">Quantity (kg)</label>
+          <input
+            id="fabric-qty"
+            type="number"
+            min="1"
+            step="1"
+            inputMode="numeric"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            placeholder="1"
+            required
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="fabric-color">Color</label>
+          <input
+            id="fabric-color"
+            type="text"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            placeholder="Write the colourway"
+            required
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="fabric-rib">Rib</label>
+          <input
+            id="fabric-rib"
+            type="text"
+            value={rib}
+            onChange={(e) => setRib(e.target.value)}
+            placeholder="Collar and cuff rib, colour or code"
+          />
         </div>
 
         <div className="field">
@@ -158,7 +181,7 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
             id="fabric-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Delivery window, colour when you have a card, anything else."
+            placeholder="Delivery window, anything else."
           />
         </div>
 

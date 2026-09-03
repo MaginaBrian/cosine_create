@@ -75,7 +75,7 @@ function OrderRows({ orders, savingId, onStageChange, onDelete }) {
   if (!orders.length) {
     return (
       <tr>
-        <td colSpan={13}>No orders yet.</td>
+        <td colSpan={14}>No orders yet.</td>
       </tr>
     );
   }
@@ -93,6 +93,7 @@ function OrderRows({ orders, savingId, onStageChange, onDelete }) {
       <td>{quantityLabel(o)}</td>
       <td>{formatSizeRun(o.sizes) || "—"}</td>
       <td>{o.color || "—"}</td>
+      <td>{o.rib || "—"}</td>
       <td>{o.height || "—"}</td>
       <td>{o.fabric || "—"}</td>
       <td>{o.notes || "—"}</td>
@@ -272,6 +273,7 @@ export default function Admin({ user, onLogout }) {
                           <th>Qty</th>
                           <th>Size</th>
                           <th>Color</th>
+                          <th>Rib</th>
                           <th>Height</th>
                           <th>Apparel fabric</th>
                           <th>Notes</th>

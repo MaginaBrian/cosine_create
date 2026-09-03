@@ -59,6 +59,8 @@ def ensure_schema():
             statements.append("ALTER TABLE orders ADD COLUMN size_breakdown TEXT")
         if "color" not in cols:
             statements.append("ALTER TABLE orders ADD COLUMN color VARCHAR(120)")
+        if "rib" not in cols:
+            statements.append("ALTER TABLE orders ADD COLUMN rib VARCHAR(120)")
         if "height" not in cols:
             statements.append("ALTER TABLE orders ADD COLUMN height VARCHAR(40)")
         if "fabric" not in cols:
@@ -237,7 +239,9 @@ def create_fabric_order(user, body):
     if quantity < 1:
         return jsonify({"error": "quantity must be at least 1"}), 400
 
-    unit = (body.get("unit") or "m").strip().lower()
+    unit = (body.get("unit") or "kg").strip().lower()
+    if unit in ("kilo", "kilos", "kilogram", "kilograms"):
+        unit = "kg"
     if unit in ("meter", "metre", "meters", "metres"):
         unit = "m"
     if unit not in FABRIC_UNITS:
@@ -248,6 +252,9 @@ def create_fabric_order(user, body):
         return jsonify({"error": "Stage must be production or dispatch"}), 400
 
     color = (body.get("color") or "").strip() or None
+    if not color:
+        return jsonify({"error": "A colour is required"}), 400
+    rib = (body.get("rib") or "").strip() or None
     notes = (body.get("notes") or "").strip() or None
     phone = parse_phone(body.get("phone"))
     if not phone:
@@ -272,6 +279,7 @@ def create_fabric_order(user, body):
         stage=stage,
         notes=notes,
         color=color,
+        rib=rib,
         fabric=snapshot,
         unit=unit,
     )

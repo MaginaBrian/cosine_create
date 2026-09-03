@@ -1,0 +1,95 @@
+.textile-kind__shot {
+  cursor: pointer;
+}
+
+.textile-kind__shot img {
+  filter: grayscale(1) contrast(1.04);
+}
+
+.textile-kind__spec {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.72) 48%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.textile-kind__shot.is-open .textile-kind__spec,
+.textile-kind__shot:hover .textile-kind__spec,
+.textile-kind__shot:focus-visible .textile-kind__spec {
+  opacity: 1;
+}
+
+.textile-kind__spec dl {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.textile-kind__spec dl div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: baseline;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  padding-bottom: 0.45rem;
+}
+
+.textile-kind__spec dt {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.textile-kind__spec dd {
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.textile-kind__wheel {
+  width: min(42%, 9.5rem);
+  margin-top: 0.25rem;
+}
+
+.textile-kind__wheel img {
+  position: static;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+  filter: none;
+}
+
+.textile-kind__wheel figcaption {
+  margin-top: 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.textile-kind .order-panel {
+  padding-inline: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .textile-kind__spec {
+    transition: none;
+  }
+}

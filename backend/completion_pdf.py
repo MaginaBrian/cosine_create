@@ -105,6 +105,7 @@ def build_completion_pdf(order):
         ("Quantity", _quantity(order)),
         ("Size", _size_run(order)),
         ("Color", order.color),
+        ("Rib", getattr(order, "rib", None)),
         ("Height", order.height),
         ("Notes", order.notes),
         ("Ordered", _format_when(order.created_at)),

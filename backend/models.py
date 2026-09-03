@@ -80,6 +80,7 @@ class Order(db.Model):
     garment = db.Column(db.String(80), nullable=True)
     size_breakdown = db.Column(db.Text, nullable=True)
     color = db.Column(db.String(120), nullable=True)
+    rib = db.Column(db.String(120), nullable=True)
     height = db.Column(db.String(40), nullable=True)
     fabric = db.Column(db.String(200), nullable=True)
     fabric_id = db.Column(db.Integer, db.ForeignKey("fabrics.id"), nullable=True)
@@ -122,6 +123,7 @@ class Order(db.Model):
             "garment": self.garment,
             "sizes": self.parsed_sizes(),
             "color": self.color,
+            "rib": self.rib,
             "height": self.height,
             "fabric": self.fabric,
             "fabric_id": self.fabric_id,
@@ -196,6 +198,7 @@ class Fabric(db.Model):
             "id": self.id,
             "kind": self.kind,
             "composition": self.composition_label(),
+            "fibres": self.fibres(),
             "gsm": self.gsm,
             "colors": self.colors(),
         }

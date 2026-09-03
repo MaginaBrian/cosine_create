@@ -183,6 +183,12 @@ export default function Project({ slug, user }) {
                 </span>
                 <span className="project-hero__edition-rule" aria-hidden="true" />
               </p>
+            ) : project.hookStyle === "kicker" ? (
+              <p className="project-hero__hook project-hero__hook--kicker">
+                <span className="project-hero__edition-rule" aria-hidden="true" />
+                <span className="project-hero__kicker">{project.hook}</span>
+                <span className="project-hero__edition-rule" aria-hidden="true" />
+              </p>
             ) : (
               <p className="project-hero__hook">{project.hook}</p>
             )
@@ -204,20 +210,7 @@ export default function Project({ slug, user }) {
           <p className="container textiles-load-error">{fabricError}</p>
         ) : (
           <>
-            <TextilesCatalog
-              fabrics={fabrics}
-              selectedId={canOrder ? selectedFabric?.id : undefined}
-              onOrder={
-                canOrder
-                  ? (fabric) => {
-                      setSelectedFabric(fabric);
-                      document.getElementById("fabric-order")?.scrollIntoView({
-                        behavior: "smooth",
-                      });
-                    }
-                  : undefined
-              }
-            />
+            <TextilesCatalog fabrics={fabrics} />
             {canOrder ? (
               <div id="fabric-order">
                 <FabricOrderPanel
