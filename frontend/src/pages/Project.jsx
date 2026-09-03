@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CLOTHING_CATEGORIES, SHARED_CATEGORIES, getProject } from "../data";
-import { canViewTextiles, isBrandOwner } from "../clientHome";
+import { canOrderTextiles, isBrandOwner } from "../clientHome";
 import { fetchFabrics } from "../api";
 import OrderPanel from "../components/OrderPanel";
 import FabricOrderPanel from "../components/FabricOrderPanel";
@@ -138,17 +138,18 @@ function HeroBackground({ image, video }) {
 
 export default function Project({ slug, user }) {
   const project = getProject(slug);
-  const textilesAccess = slug === "cosine-textiles" && canViewTextiles(user);
+  const isTextiles = slug === "cosine-textiles";
+  const canOrder = canOrderTextiles(user);
   const [fabrics, setFabrics] = useState([]);
   const [fabricError, setFabricError] = useState("");
   const [selectedFabric, setSelectedFabric] = useState(null);
 
   useEffect(() => {
-    if (!textilesAccess) return;
+    if (!isTextiles) return;
     fetchFabrics()
       .then((data) => setFabrics(data.fabrics || []))
       .catch((err) => setFabricError(err.message || "Could not load the mill list"));
-  }, [textilesAccess]);
+  }, [isTextiles]);
 
   if (!project) {
     return (
@@ -184,29 +185,35 @@ export default function Project({ slug, user }) {
         </div>
       </header>
 
-      {textilesAccess ? (
+      {isTextiles ? (
         fabricError ? (
           <p className="container textiles-load-error">{fabricError}</p>
         ) : (
           <>
             <TextilesCatalog
               fabrics={fabrics}
-              selectedId={selectedFabric?.id}
-              onOrder={(fabric) => {
-                setSelectedFabric(fabric);
-                document.getElementById("fabric-order")?.scrollIntoView({
-                  behavior: "smooth",
-                });
-              }}
+              selectedId={canOrder ? selectedFabric?.id : undefined}
+              onOrder={
+                canOrder
+                  ? (fabric) => {
+                      setSelectedFabric(fabric);
+                      document.getElementById("fabric-order")?.scrollIntoView({
+                        behavior: "smooth",
+                      });
+                    }
+                  : undefined
+              }
             />
-            <div id="fabric-order">
-              <FabricOrderPanel
-                user={user}
-                fabrics={fabrics}
-                selected={selectedFabric}
-                onSelect={setSelectedFabric}
-              />
-            </div>
+            {canOrder ? (
+              <div id="fabric-order">
+                <FabricOrderPanel
+                  user={user}
+                  fabrics={fabrics}
+                  selected={selectedFabric}
+                  onSelect={setSelectedFabric}
+                />
+              </div>
+            ) : null}
           </>
         )
       ) : (

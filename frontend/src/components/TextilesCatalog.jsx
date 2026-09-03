@@ -16,7 +16,9 @@ export default function TextilesCatalog({ fabrics, full, selectedId, onOrder }) 
           <p>
             {full
               ? "Supplier, mill code, prices and usage stay here. Buyers only see type, composition and GSM until colour cards are on the sheet."
-              : "Type, composition and GSM. Order a line and it shows on the studio admin list. Colour range will show when a card is on file."}
+              : onOrder
+                ? "Type, composition and GSM. Order a line and it shows on the studio admin list. Colour range will show when a card is on file."
+                : "Type, composition and GSM. Anyone can browse the lines. A buyer account is needed to place an order. Colour range will show when a card is on file."}
           </p>
         </div>
 

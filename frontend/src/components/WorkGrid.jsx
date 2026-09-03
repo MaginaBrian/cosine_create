@@ -8,7 +8,7 @@ export default function WorkGrid({ projects }) {
           href={`#/work/${p.slug}`}
           className={`work-card${p.image ? "" : " work-card--text"}`}
           key={p.slug}
-          aria-label={`${p.client} — ${p.name}`}
+          aria-label={`${p.cardTitle || p.client} — ${p.name}`}
         >
           {p.image ? (
             <img
@@ -17,7 +17,7 @@ export default function WorkGrid({ projects }) {
               className={p.imageFit === "portrait" ? "is-portrait" : undefined}
             />
           ) : null}
-          <span className="work-card__name">{p.client}</span>
+          <span className="work-card__name">{p.cardTitle || p.client}</span>
         </a>
       ))}
     </div>

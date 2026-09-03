@@ -10,6 +10,6 @@ export function isBrandOwner(user, slug) {
   return Boolean(user?.role === "client" && user.client_slug && user.client_slug === slug);
 }
 
-export function canViewTextiles(user) {
+export function canOrderTextiles(user) {
   return user?.role === "buyer";
 }

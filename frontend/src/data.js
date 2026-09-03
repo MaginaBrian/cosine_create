@@ -195,6 +195,7 @@ export const PROJECTS = [
     slug: "cosine-create",
     name: "Studio",
     client: "Cosine Create",
+    cardTitle: "Cosine Create\nComing Soon",
     hook: "Work from our own studio.",
     credit: "In house.",
     image: "/people/hands.jpg",

@@ -318,14 +318,8 @@ def register_routes(app):
         return jsonify({"products": [p.to_public() for p in query.all()]})
 
     @app.get("/api/fabrics")
-    @require_auth
-    @require_role("buyer", "admin")
     def fabrics():
-        user = g.current_user
         rows = Fabric.query.order_by(Fabric.kind, Fabric.gsm, Fabric.code, Fabric.id).all()
-        if user.role == "admin":
-            return jsonify({"fabrics": [row.to_admin() for row in rows]})
-
         seen = set()
         unique = []
         for row in rows:

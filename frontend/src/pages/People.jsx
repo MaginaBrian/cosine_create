@@ -16,7 +16,7 @@ const ROLES = [
     id: "eyes",
     title: "The Eyes",
     image: "/people/eyes.jpg",
-    alt: "A garment production floor with sewing machines and hanging work in progress",
+    alt: "African garment workers at sewing stations on a production floor",
     body: [
       "Nine years in operations, between them, watching over the process so nothing slips between stages. Operational efficiency, strategy, sustainability and partnerships, ISO-certified.",
       "The ones who keep a client relationship steady and the standard defensible when it's questioned. Alongside The Spine, they oversee production timelines and floor supervision.",
@@ -26,7 +26,7 @@ const ROLES = [
     id: "ear",
     title: "The Ear",
     image: "/people/ear.jpg",
-    alt: "Pattern paper, rulers and a muslin toile on a dress form",
+    alt: "An African fashion designer drafting a pattern at a studio table",
     body: [
       "Seven years in the room listening to what a client means before it becomes a garment. Trained across fashion design and pattern making, with the range to take a brief from sketch to tech pack.",
       "2D and 3D design, Illustrator, print and finishing, and knowledge that stretches as far as sports shoe design. Comfortable across athleisure, streetwear, loungewear, casual and sportswear. Alongside The Head and The Spine, this team carries the sampling conversation with clients through to fit and revision.",
@@ -36,7 +36,7 @@ const ROLES = [
     id: "hands",
     title: "The Hands",
     image: "/people/hands.jpg",
-    alt: "A tailor guiding fabric under an industrial sewing machine",
+    alt: "Dark-skinned hands guiding fabric under an industrial sewing machine",
     body: "A decade of making, shared across the floor. Stitching and sample making across the full range, athleisure, casual, sportswear, tailoring, technical garments, women\u2019s and men\u2019s wear. The kind of range that comes from years of being handed almost anything and being expected to build it properly. Hand-finishing, working from a tech pack independently and mentoring newer tailors coming up through the floor.",
   },
   {
