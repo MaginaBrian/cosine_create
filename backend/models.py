@@ -200,6 +200,7 @@ class Fabric(db.Model):
             "composition": self.composition_label(),
             "fibres": self.fibres(),
             "gsm": self.gsm,
+            "spec": self.usage or None,
             "colors": self.colors(),
         }
 

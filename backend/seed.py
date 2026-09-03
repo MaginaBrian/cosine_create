@@ -65,23 +65,37 @@ def _add_product(**kwargs):
 
 def load_fabrics():
     for row in FABRIC_ROWS:
-        db.session.add(
-            Fabric(
-                supplier=row["supplier"],
-                code=row["code"],
-                kind=row["kind"],
-                composition_json=json.dumps(row["fibres"]),
-                gsm=row["gsm"],
-                price_kg_cny=row["price_kg_cny"],
-                price_kg_kes=row["price_kg_kes"],
-                price_kg_cosintex=row["price_kg_cosintex"],
-                price_m_cny=row["price_m_cny"],
-                price_m_kes=row["price_m_kes"],
-                price_m_cosintex=row["price_m_cosintex"],
-                usage=row["usage"] or None,
-                colors_json=json.dumps(row["colors"]),
-            )
-        )
+        db.session.add(_fabric_from_row(row))
+
+
+def _fabric_from_row(row):
+    return Fabric(
+        supplier=row["supplier"],
+        code=row["code"],
+        kind=row["kind"],
+        composition_json=json.dumps(row["fibres"]),
+        gsm=row["gsm"],
+        price_kg_cny=row["price_kg_cny"],
+        price_kg_kes=row["price_kg_kes"],
+        price_kg_cosintex=row["price_kg_cosintex"],
+        price_m_cny=row["price_m_cny"],
+        price_m_kes=row["price_m_kes"],
+        price_m_cosintex=row["price_m_cosintex"],
+        usage=row["usage"] or None,
+        colors_json=json.dumps(row["colors"]),
+    )
+
+
+def ensure_fabric_rows():
+    for row in Fabric.query.filter(Fabric.kind.in_(("POLYESTER THREAD", "NYLON THREAD"))):
+        row.kind = "THREAD"
+    if Fabric.query.count() == 0:
+        load_fabrics()
+        return
+    for row in FABRIC_ROWS:
+        exists = Fabric.query.filter_by(kind=row["kind"], code=row["code"]).first()
+        if exists is None:
+            db.session.add(_fabric_from_row(row))
 
 
 def ensure_textiles_catalog_product():
@@ -121,8 +135,7 @@ def ensure_textiles():
         buyer.role = "buyer"
         buyer.client_slug = BUYER_CREDENTIAL["client_slug"]
     ensure_textiles_catalog_product()
-    if Fabric.query.count() == 0:
-        load_fabrics()
+    ensure_fabric_rows()
     db.session.commit()
 
 

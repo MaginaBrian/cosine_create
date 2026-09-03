@@ -187,8 +187,15 @@ def create_garment_order(user, body):
         return jsonify({"error": "Stage must be production or dispatch"}), 400
 
     color = (body.get("color") or "").strip() or None
+    if not color:
+        return jsonify({"error": "A colour is required"}), 400
     height = (body.get("height") or "").strip() or None
-    if height and height not in HEIGHTS:
+    if garment in ("female-sweatpants", "male-sweatpants"):
+        if not height:
+            return jsonify({"error": "Height is required"}), 400
+        if height not in HEIGHTS:
+            return jsonify({"error": "Height must be Short, Regular or Tall"}), 400
+    elif height and height not in HEIGHTS:
         return jsonify({"error": "Height must be Short, Regular or Tall"}), 400
     fabric = (body.get("fabric") or "").strip() or None
     notes = (body.get("notes") or "").strip() or None
@@ -239,13 +246,16 @@ def create_fabric_order(user, body):
     if quantity < 1:
         return jsonify({"error": "quantity must be at least 1"}), 400
 
-    unit = (body.get("unit") or "kg").strip().lower()
-    if unit in ("kilo", "kilos", "kilogram", "kilograms"):
+    if mill_line.kind == "THREAD":
         unit = "kg"
-    if unit in ("meter", "metre", "meters", "metres"):
-        unit = "m"
-    if unit not in FABRIC_UNITS:
-        return jsonify({"error": "Quantity unit must be metres or kg"}), 400
+    else:
+        unit = (body.get("unit") or "kg").strip().lower()
+        if unit in ("kilo", "kilos", "kilogram", "kilograms"):
+            unit = "kg"
+        if unit in ("meter", "metre", "meters", "metres"):
+            unit = "m"
+        if unit not in FABRIC_UNITS:
+            return jsonify({"error": "Quantity unit must be metres or kg"}), 400
 
     stage = canonical_stage(body.get("stage") or "produce")
     if stage not in ADMIN_MOVE_STAGES:
@@ -254,16 +264,26 @@ def create_fabric_order(user, body):
     color = (body.get("color") or "").strip() or None
     if not color:
         return jsonify({"error": "A colour is required"}), 400
+    thread = mill_line.kind == "THREAD"
     rib = (body.get("rib") or "").strip() or None
+    if not thread and not rib:
+        return jsonify({"error": "Rib is required"}), 400
+    if thread:
+        rib = None
     notes = (body.get("notes") or "").strip() or None
     phone = parse_phone(body.get("phone"))
     if not phone:
         return jsonify({"error": "A phone number is required"}), 400
 
     product = textiles_catalog_product()
-    snapshot = mill_line.composition_label()
-    if mill_line.gsm:
-        snapshot = f"{snapshot} · {mill_line.gsm} GSM" if snapshot != "—" else f"{mill_line.gsm} GSM"
+    if thread:
+        snapshot = " · ".join(
+            part for part in (mill_line.code, mill_line.composition_label()) if part and part != "—"
+        )
+    else:
+        snapshot = mill_line.composition_label()
+        if mill_line.gsm:
+            snapshot = f"{snapshot} · {mill_line.gsm} GSM" if snapshot != "—" else f"{mill_line.gsm} GSM"
 
     order = Order(
         user_id=user.id,

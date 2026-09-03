@@ -5,10 +5,12 @@ import FabricOrderPanel from "../components/FabricOrderPanel";
 import {
   formatSpan,
   groupFabrics,
+  isThread,
   kindCover,
   kindFromSlug,
   kindLabel,
   rangesForKind,
+  threadName,
 } from "../textiles";
 import "./Lookbook.css";
 import "./TextileKind.css";
@@ -31,6 +33,10 @@ export default function TextileKind({ kindSlug, user }) {
     () => (kind ? fabrics.filter((row) => row.kind === kind) : []),
     [fabrics, kind]
   );
+
+  useEffect(() => {
+    if (lines.length === 1) setSelected(lines[0]);
+  }, [lines]);
   const ranges = useMemo(() => rangesForKind(lines), [lines]);
   const groups = useMemo(() => groupFabrics(fabrics), [fabrics]);
   const known = groups.some((group) => group.kind === kind);
@@ -46,6 +52,7 @@ export default function TextileKind({ kindSlug, user }) {
     );
   }
 
+  const thread = isThread(kind);
   const label = kindLabel(kind);
   const cover = kindCover(kind);
 
@@ -56,7 +63,11 @@ export default function TextileKind({ kindSlug, user }) {
           <a href="#/work/cosine-textiles">Cosine Textiles</a>
         </p>
         <h1>{label}</h1>
-        <p className="lookbook__hint">Tap the look for fibre, GSM and colour range.</p>
+        <p className="lookbook__hint">
+          {thread
+            ? "Tap the look for ply, fibre and colour range."
+            : "Tap the look for fibre, GSM and colour range."}
+        </p>
       </header>
 
       {error ? <p className="container textiles-load-error">{error}</p> : null}
@@ -78,18 +89,29 @@ export default function TextileKind({ kindSlug, user }) {
           <img src={cover} alt="" className="product-slide__front" />
           <div className="textile-kind__spec">
             <dl>
-              {ranges.fibres.map((fibre) => (
-                <div key={fibre.key}>
-                  <dt>{fibre.label}</dt>
-                  <dd>{formatSpan(fibre.min, fibre.max, "%")}</dd>
-                </div>
-              ))}
-              <div>
-                <dt>GSM</dt>
-                <dd>
-                  {ranges.gsm ? formatSpan(ranges.gsm.min, ranges.gsm.max, "") : "—"}
-                </dd>
-              </div>
+              {thread ? (
+                lines.map((line) => (
+                  <div key={line.id}>
+                    <dt>{threadName(line)}</dt>
+                    <dd>{line.spec || line.code || "—"}</dd>
+                  </div>
+                ))
+              ) : (
+                <>
+                  {ranges.fibres.map((fibre) => (
+                    <div key={fibre.key}>
+                      <dt>{fibre.label}</dt>
+                      <dd>{formatSpan(fibre.min, fibre.max, "%")}</dd>
+                    </div>
+                  ))}
+                  <div>
+                    <dt>GSM</dt>
+                    <dd>
+                      {ranges.gsm ? formatSpan(ranges.gsm.min, ranges.gsm.max, "") : "—"}
+                    </dd>
+                  </div>
+                </>
+              )}
             </dl>
             <figure className="textile-kind__wheel">
               <img src="/textiles/color-wheel.jpg" alt="Full colour range" />

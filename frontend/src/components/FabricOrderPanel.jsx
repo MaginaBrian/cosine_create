@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createOrder, fetchOrders } from "../api";
-import { lineSummary, quantityLabel } from "../textiles";
+import { isThread, lineSummary, quantityLabel } from "../textiles";
 import "./OrderPanel.css";
 
 function isPhone(value) {
@@ -17,6 +17,7 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const thread = fabrics.some((row) => isThread(row)) && fabrics.every((row) => isThread(row));
 
   const load = async () => {
     const data = await fetchOrders();
@@ -46,7 +47,7 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
     setError("");
     setSent(false);
     if (!selected) {
-      setError("Choose a fabric line.");
+      setError(thread ? "Choose a thread." : "Choose a fabric line.");
       return;
     }
     const qty = Number(quantity);
@@ -56,6 +57,10 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
     }
     if (!color.trim()) {
       setError("Write the colour.");
+      return;
+    }
+    if (!thread && !rib.trim()) {
+      setError("Write the rib.");
       return;
     }
     if (!isPhone(phone)) {
@@ -73,7 +78,7 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
         quantity: qty,
         unit: "kg",
         color: color.trim(),
-        rib: rib.trim() || undefined,
+        rib: thread ? undefined : rib.trim(),
         stage: "produce",
         notes: notes.trim() || undefined,
       });
@@ -93,17 +98,18 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
   return (
     <section className="order-panel" aria-label="Place a fabric order">
       <div className="order-panel__intro">
-        <p className="eyebrow">Fabric order</p>
-        <h2>Order a line.</h2>
+        <p className="eyebrow">{thread ? "Thread order" : "Fabric order"}</p>
+        <h2>{thread ? "Order a thread." : "Order a line."}</h2>
         <p>
-          Choose a fabric from the list, set the kilos, colour and rib, and send. The studio sees it
-          on the admin orders list. Public visitors do not see this.
+          {thread
+            ? "Choose the thread, set the kilos and colour, and send. The studio sees it on the admin orders list. Public visitors do not see this."
+            : "Choose a fabric from the list, set the kilos, colour and rib, and send. The studio sees it on the admin orders list. Public visitors do not see this."}
         </p>
       </div>
 
       <form className="order-panel__form" onSubmit={onSubmit}>
         <div className="field">
-          <label htmlFor="fabric-line">Line</label>
+          <label htmlFor="fabric-line">{thread ? "Thread" : "Line"}</label>
           <select
             id="fabric-line"
             value={selected?.id || ""}
@@ -114,7 +120,7 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
             }}
             required
           >
-            <option value="">Select a fabric</option>
+            <option value="">{thread ? "Select a thread" : "Select a fabric"}</option>
             {fabrics.map((row) => (
               <option key={row.id} value={row.id}>
                 {lineSummary(row)}
@@ -152,6 +158,7 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
           />
         </div>
 
+        {thread ? null : (
         <div className="field">
           <label htmlFor="fabric-rib">Rib</label>
           <input
@@ -160,8 +167,10 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
             value={rib}
             onChange={(e) => setRib(e.target.value)}
             placeholder="Collar and cuff rib, colour or code"
+            required
           />
         </div>
+        )}
 
         <div className="field">
           <label htmlFor="fabric-phone">Phone number</label>

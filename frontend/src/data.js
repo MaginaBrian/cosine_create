@@ -198,7 +198,7 @@ export const PROJECTS = [
     hook: "Coming soon",
     hookStyle: "kicker",
     credit: "In house.",
-    image: "/people/hands.jpg",
+    image: "/work/cosine-create.jpg",
     looks: emptyLooks(),
   },
   {
@@ -207,7 +207,8 @@ export const PROJECTS = [
     client: "Cosine Textiles",
     hook: "Fabric and textile work.",
     credit: "Work done for Cosine Textiles",
-    image: "/work/solace.jpg",
+    image: "/work/cosine-textiles.jpg",
+    imageFit: "portrait",
     looks: emptyLooks(),
   },
   {

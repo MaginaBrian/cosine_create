@@ -4,6 +4,13 @@
 
 .textile-kind__shot img {
   filter: grayscale(1) contrast(1.04);
+  transition: filter 0.45s ease;
+}
+
+.textile-kind__shot:hover img,
+.textile-kind__shot:focus-visible img,
+.textile-kind__shot.is-open img {
+  filter: grayscale(0) contrast(1.02);
 }
 
 .textile-kind__spec {
@@ -89,7 +96,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .textile-kind__spec {
+  .textile-kind__spec,
+  .textile-kind__shot img {
     transition: none;
   }
 }

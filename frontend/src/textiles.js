@@ -8,6 +8,7 @@ export const KIND_ORDER = [
   "WOOL",
   "SPORTS/ JACKET",
   "OUTDOOR JACKET",
+  "THREAD",
 ];
 
 export const KIND_LABELS = {
@@ -20,6 +21,7 @@ export const KIND_LABELS = {
   WOOL: "Wool",
   "SPORTS/ JACKET": "Sports / jacket",
   "OUTDOOR JACKET": "Outdoor jacket",
+  THREAD: "Threads",
 };
 
 export const KIND_SLUGS = {
@@ -32,6 +34,7 @@ export const KIND_SLUGS = {
   WOOL: "wool",
   "SPORTS/ JACKET": "sports-jacket",
   "OUTDOOR JACKET": "outdoor-jacket",
+  THREAD: "threads",
 };
 
 export const FIBRE_ORDER = [
@@ -92,8 +95,22 @@ export function formatMoney(value, currency) {
   return amount;
 }
 
+export function isThread(kindOrFabric) {
+  const kind = typeof kindOrFabric === "string" ? kindOrFabric : kindOrFabric?.kind;
+  return kind === "THREAD";
+}
+
+export function threadName(fabric) {
+  const fibres = fibresOf(fabric);
+  const key = FIBRE_ORDER.find((name) => fibres[name]) || Object.keys(fibres)[0];
+  return key ? `${FIBRE_LABELS[key] || key} thread` : "Thread";
+}
+
 export function lineSummary(fabric) {
   if (!fabric) return "Fabric";
+  if (isThread(fabric)) {
+    return [threadName(fabric), fabric.spec || fabric.code].filter(Boolean).join(" · ");
+  }
   const bits = [kindLabel(fabric.kind), fabric.composition];
   if (fabric.gsm != null) bits.push(`${fabric.gsm} GSM`);
   return bits.filter(Boolean).join(" · ");

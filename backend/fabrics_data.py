@@ -248,4 +248,6 @@ FABRIC_ROWS = [
           kg={"cosintex": 200}, meter={"cosintex": 50}),
     _line("LIAHREN", "NSPIQUE180", "WORKOUT TEE", _f(spandex=10, nylon=90), 180,
           kg={"cosintex": 200}, meter={"cosintex": 50}),
+    _line("", "40s/2", "THREAD", _f(polyester=100), None, usage="40s/2"),
+    _line("", "210 D/3", "THREAD", _f(nylon=100), None, usage="210 D/3"),
 ]
