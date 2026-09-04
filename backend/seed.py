@@ -22,12 +22,12 @@ SEED_CREDENTIALS = [
         "client_slug": "mwotaji",
     },
     {
-        "email": "atelier@example.com",
-        "password": "Atelier123!",
-        "name": "Jules Atelier",
+        "email": "groove@thegroovehangout.com",
+        "password": "Groove123!",
+        "name": "The Groove Hangout",
         "role": "client",
-        "brand": "Atelier",
-        "client_slug": "atelier",
+        "brand": "The Groove Hangout",
+        "client_slug": "the-groove-hangout",
     },
     BUYER_CREDENTIAL,
 ]
@@ -51,9 +51,9 @@ MWOTAJI_LOOKS = [
     (None, "sweatshirts", [2, 3, 4]),
 ]
 
-ATELIER_PRODUCTS = [
-    ("atelier-tee", "Atelier Tee", "tops", "unisex", None),
-    ("atelier-overshirt", "Atelier Overshirt", "tops", "unisex", None),
+GROOVE_PRODUCTS = [
+    ("groove-tee", "Groove Hangout Tee", "tops", "unisex", None),
+    ("groove-hoodie", "Groove Hangout Hoodie", "hoodies", "unisex", None),
 ]
 
 
@@ -196,11 +196,11 @@ def seed_database():
     load_fabrics()
     ensure_textiles_catalog_product()
 
-    atelier_products = {}
-    for slug, name, category, gender, look_ref in ATELIER_PRODUCTS:
+    groove_products = {}
+    for slug, name, category, gender, look_ref in GROOVE_PRODUCTS:
         product = _add_product(
-            client_slug="atelier",
-            brand="Atelier",
+            client_slug="the-groove-hangout",
+            brand="The Groove Hangout",
             slug=slug,
             name=name,
             category=category,
@@ -208,12 +208,12 @@ def seed_database():
             look_ref=look_ref,
             sku_kind="category",
         )
-        atelier_products[slug] = product
+        groove_products[slug] = product
 
     db.session.flush()
 
     mwotaji = users["mwotaji@mwotaji.com"]
-    atelier = users["atelier@example.com"]
+    groove = users["groove@thegroovehangout.com"]
 
     db.session.add(
         Order(
@@ -231,16 +231,16 @@ def seed_database():
     )
     db.session.add(
         Order(
-            user_id=atelier.id,
-            product_id=atelier_products["atelier-tee"].id,
-            client_slug="atelier",
-            contact_name=atelier.name,
-            brand="Atelier",
-            email=atelier.email,
+            user_id=groove.id,
+            product_id=groove_products["groove-tee"].id,
+            client_slug="the-groove-hangout",
+            contact_name=groove.name,
+            brand="The Groove Hangout",
+            email=groove.email,
             making="Apparel",
-            quantity=48,
+            quantity=80,
             stage="produce",
-            notes="First sample approved. Line set for a run under fifty.",
+            notes="7th edition merch tees. First sample approved. Line set for the run.",
         )
     )
 

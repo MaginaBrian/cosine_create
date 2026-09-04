@@ -15,8 +15,8 @@ const ROLES = [
   {
     id: "eyes",
     title: "The Eyes",
-    image: "/people/eyes.jpg",
-    alt: "African garment workers at sewing stations on a production floor",
+    image: "/people/vision.jpg",
+    alt: "A studio lead looking ahead, the work in focus behind her",
     body: [
       "Nine years in operations, between them, watching over the process so nothing slips between stages. Operational efficiency, strategy, sustainability and partnerships, ISO-certified.",
       "The ones who keep a client relationship steady and the standard defensible when it's questioned. Alongside The Spine, they oversee production timelines and floor supervision.",
@@ -35,8 +35,8 @@ const ROLES = [
   {
     id: "hands",
     title: "The Hands",
-    image: "/people/hands.jpg",
-    alt: "Dark-skinned hands guiding fabric under an industrial sewing machine",
+    image: "/people/eyes.jpg",
+    alt: "African garment workers at sewing stations on a production floor",
     body: "A decade of making, shared across the floor. Stitching and sample making across the full range, athleisure, casual, sportswear, tailoring, technical garments, women\u2019s and men\u2019s wear. The kind of range that comes from years of being handed almost anything and being expected to build it properly. Hand-finishing, working from a tech pack independently and mentoring newer tailors coming up through the floor.",
   },
   {

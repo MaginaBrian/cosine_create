@@ -22,17 +22,18 @@ API: `http://127.0.0.1:5000`. Vite proxies `/api` here. CORS allows `localhost:5
 
 ### Seed credentials
 
-| Role   | Email                 | Password     | Brand        |
-|--------|-----------------------|--------------|--------------|
-| admin  | admin@cosine.create   | Admin123!    | Cosine Create |
-| client | mwotaji@mwotaji.com   | Mwotaji123!  | MWOTAJI      |
-| client | atelier@example.com   | Atelier123!  | Atelier      |
+| Role   | Email                         | Password     | Brand                |
+|--------|-------------------------------|--------------|----------------------|
+| admin  | admin@cosine.create           | Admin123!    | Cosine Create        |
+| client | mwotaji@mwotaji.com           | Mwotaji123!  | MWOTAJI              |
+| client | groove@thegroovehangout.com   | Groove123!   | The Groove Hangout   |
+| buyer  | buyer@cosine.textiles         | Buyer123!    | Cosine Textiles      |
 
 ## Auth
 
 - `POST /api/auth/login` with `{ "email", "password" }` returns `{ token, user }`.
 - Later requests: `Authorization: Bearer <token>`.
-- Passwords are bcrypt-hashed. Roles: `client` or `admin`.
+- Passwords are bcrypt-hashed. Roles: `client`, `admin`, or `buyer`.
 - Clients are scoped by `client_slug`. They can only list and order their own products.
 - Admin can list all products, orders, and enquiries. Admin cannot create catalog orders.
 
@@ -73,21 +74,21 @@ Order stages stored on the client page are **Production** (`produce`) and **Disp
 
 ## Isolation check
 
-A MWOTAJI token posting an order for an Atelier `product_id` must return 403:
+A MWOTAJI token posting an order for a Groove Hangout `product_id` must return 403:
 
 ```bash
 MWOTA=$(curl -s -X POST http://127.0.0.1:5000/api/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"email":"mwotaji@mwotaji.com","password":"Mwotaji123!"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
 
-ATELIER_PID=$(curl -s http://127.0.0.1:5000/api/products \
+GROOVE_PID=$(curl -s http://127.0.0.1:5000/api/products \
   -H "Authorization: Bearer $(curl -s -X POST http://127.0.0.1:5000/api/auth/login \
     -H 'Content-Type: application/json' \
-    -d '{"email":"atelier@example.com","password":"Atelier123!"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")" \
+    -d '{"email":"groove@thegroovehangout.com","password":"Groove123!"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")" \
   | python3 -c "import sys,json; print(json.load(sys.stdin)['products'][0]['id'])")
 
 curl -s -o /dev/stderr -w "%{http_code}\n" -X POST http://127.0.0.1:5000/api/orders \
   -H "Authorization: Bearer $MWOTA" \
   -H 'Content-Type: application/json' \
-  -d "{\"product_id\": $ATELIER_PID, \"name\": \"Amina\", \"brand\": \"MWOTAJI\", \"email\": \"mwotaji@mwotaji.com\", \"quantity\": 50, \"stage\": \"produce\"}"
+  -d "{\"product_id\": $GROOVE_PID, \"name\": \"Amina\", \"brand\": \"MWOTAJI\", \"email\": \"mwotaji@mwotaji.com\", \"quantity\": 50, \"stage\": \"produce\"}"
 ```
