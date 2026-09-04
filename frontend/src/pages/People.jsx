@@ -15,8 +15,8 @@ const ROLES = [
   {
     id: "eyes",
     title: "The Eyes",
-    image: "/people/vision.jpg",
-    alt: "A studio lead looking ahead, the work in focus behind her",
+    image: "/people/goals.jpg",
+    alt: "Hands checking a production list against a garment on the studio table",
     body: [
       "Nine years in operations, between them, watching over the process so nothing slips between stages. Operational efficiency, strategy, sustainability and partnerships, ISO-certified.",
       "The ones who keep a client relationship steady and the standard defensible when it's questioned. Alongside The Spine, they oversee production timelines and floor supervision.",
