@@ -6,7 +6,7 @@ from security import hash_password
 
 SEED_CREDENTIALS = [
     {
-        "email": "admin@cosine.create",
+        "email": "admin@cosinecreate.com",
         "password": "Admin123!",
         "name": "Studio Admin",
         "role": "admin",
@@ -14,7 +14,7 @@ SEED_CREDENTIALS = [
         "client_slug": None,
     },
     {
-        "email": "mwotaji@mwotaji.com",
+        "email": "mwotaji@cosinecreate.com",
         "password": "Mwotaji123!",
         "name": "Amina Mwotaji",
         "role": "client",
@@ -22,7 +22,7 @@ SEED_CREDENTIALS = [
         "client_slug": "mwotaji",
     },
     {
-        "email": "groove@thegroovehangout.com",
+        "email": "groove@cosinecreate.com",
         "password": "Groove123!",
         "name": "The Groove Hangout",
         "role": "client",
@@ -212,8 +212,8 @@ def seed_database():
 
     db.session.flush()
 
-    mwotaji = users["mwotaji@mwotaji.com"]
-    groove = users["groove@thegroovehangout.com"]
+    mwotaji = users["mwotaji@cosinecreate.com"]
+    groove = users["groove@cosinecreate.com"]
 
     db.session.add(
         Order(

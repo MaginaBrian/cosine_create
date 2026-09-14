@@ -13,7 +13,7 @@ FIBRE_KEYS = (
 )
 
 BUYER_CREDENTIAL = {
-    "email": "buyer@cosine.textiles",
+    "email": "buyer@cosinecreate.com",
     "password": "Buyer123!",
     "name": "Cosine Textiles",
     "role": "buyer",

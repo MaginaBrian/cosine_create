@@ -30,13 +30,19 @@ export function clearSession() {
   setSession(null, null);
 }
 
+const API_BASE = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
+
+export function apiUrl(path) {
+  return `${API_BASE}${path}`;
+}
+
 export async function api(path, { method = "GET", body } = {}) {
   const headers = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) headers["Content-Type"] = "application/json";
 
-  const res = await fetch(path, {
+  const res = await fetch(apiUrl(path), {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -97,7 +103,7 @@ export async function deleteOrder(orderId) {
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`/api/orders/${orderId}`, { method: "DELETE", headers });
+  const res = await fetch(apiUrl(`/api/orders/${orderId}`), { method: "DELETE", headers });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.error || res.statusText || "Could not delete order");
