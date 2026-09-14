@@ -24,10 +24,10 @@ API: `http://127.0.0.1:5000`. Vite proxies `/api` here. CORS allows `localhost:5
 
 | Role   | Email                         | Password     | Brand                |
 |--------|-------------------------------|--------------|----------------------|
-| admin  | admin@cosine.create           | Admin123!    | Cosine Create        |
-| client | mwotaji@mwotaji.com           | Mwotaji123!  | MWOTAJI              |
-| client | groove@thegroovehangout.com   | Groove123!   | The Groove Hangout   |
-| buyer  | buyer@cosine.textiles         | Buyer123!    | Cosine Textiles      |
+| admin  | admin@cosinecreate.com        | Admin123!    | Cosine Create        |
+| client | mwotaji@cosinecreate.com      | Mwotaji123!  | MWOTAJI              |
+| client | groove@cosinecreate.com       | Groove123!   | The Groove Hangout   |
+| buyer  | buyer@cosinecreate.com        | Buyer123!    | Cosine Textiles      |
 
 ## Auth
 
@@ -79,16 +79,16 @@ A MWOTAJI token posting an order for a Groove Hangout `product_id` must return 4
 ```bash
 MWOTA=$(curl -s -X POST http://127.0.0.1:5000/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"mwotaji@mwotaji.com","password":"Mwotaji123!"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+  -d '{"email":"mwotaji@cosinecreate.com","password":"Mwotaji123!"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
 
 GROOVE_PID=$(curl -s http://127.0.0.1:5000/api/products \
   -H "Authorization: Bearer $(curl -s -X POST http://127.0.0.1:5000/api/auth/login \
     -H 'Content-Type: application/json' \
-    -d '{"email":"groove@thegroovehangout.com","password":"Groove123!"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")" \
+    -d '{"email":"groove@cosinecreate.com","password":"Groove123!"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")" \
   | python3 -c "import sys,json; print(json.load(sys.stdin)['products'][0]['id'])")
 
 curl -s -o /dev/stderr -w "%{http_code}\n" -X POST http://127.0.0.1:5000/api/orders \
   -H "Authorization: Bearer $MWOTA" \
   -H 'Content-Type: application/json' \
-  -d "{\"product_id\": $GROOVE_PID, \"name\": \"Amina\", \"brand\": \"MWOTAJI\", \"email\": \"mwotaji@mwotaji.com\", \"quantity\": 50, \"stage\": \"produce\"}"
+  -d "{\"product_id\": $GROOVE_PID, \"name\": \"Amina\", \"brand\": \"MWOTAJI\", \"email\": \"mwotaji@cosinecreate.com\", \"quantity\": 50, \"stage\": \"produce\"}"
 ```

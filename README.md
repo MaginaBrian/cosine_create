@@ -75,10 +75,10 @@ Optional: copy `backend/.env.example` to `backend/.env`. Do not commit `.env`. S
 
 | Role   | Email                         | Password     | After login |
 |--------|-------------------------------|--------------|-------------|
-| admin  | admin@cosine.create           | Admin123!    | `#/admin` |
-| client | mwotaji@mwotaji.com           | Mwotaji123!  | `#/work/mwotaji` |
-| client | groove@thegroovehangout.com   | Groove123!   | `#/work/the-groove-hangout` |
-| buyer  | buyer@cosine.textiles         | Buyer123!    | `#/work/cosine-textiles` |
+| admin  | admin@cosinecreate.com        | Admin123!    | `#/admin` |
+| client | mwotaji@cosinecreate.com      | Mwotaji123!  | `#/work/mwotaji` |
+| client | groove@cosinecreate.com       | Groove123!   | `#/work/the-groove-hangout` |
+| buyer  | buyer@cosinecreate.com        | Buyer123!    | `#/work/cosine-textiles` |
 
 These match the current Work brands: studio admin, MWOTAJI, The Groove Hangout, and Cosine Textiles. MWOTAJI has lookbooks that match the public work pages. The Groove Hangout has a small merch catalog so client isolation is easy to prove (a MWOTAJI token cannot order a Groove product).
 

@@ -4,6 +4,7 @@ from sqlalchemy import inspect, text
 from io import BytesIO
 from pathlib import Path
 import json
+import os
 
 from completion_pdf import build_completion_pdf
 from config import Config
@@ -103,14 +104,35 @@ def create_app():
         resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
         allow_headers=["Content-Type", "Authorization"],
         methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        always_send=True,
+        automatic_options=True,
     )
+
+    @app.after_request
+    def add_cors_headers(response):
+        origin = request.headers.get("Origin", "")
+        if origin in app.config["CORS_ORIGINS"]:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PATCH, DELETE, OPTIONS"
+            response.headers["Vary"] = "Origin"
+        return response
+
+    @app.before_request
+    def handle_cors_preflight():
+        if request.method == "OPTIONS" and request.path.startswith("/api/"):
+            return ("", 204)
 
     with app.app_context():
         db.create_all()
         ensure_schema()
-        from seed import ensure_textiles
+        from seed import ensure_textiles, seed_database
 
-        ensure_textiles()
+        seed_empty = os.environ.get("SEED_IF_EMPTY", "").lower() in ("1", "true", "yes")
+        if seed_empty and User.query.count() == 0:
+            seed_database()
+        else:
+            ensure_textiles()
 
     register_routes(app)
     register_cli(app)
