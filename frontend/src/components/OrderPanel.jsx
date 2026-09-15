@@ -34,6 +34,40 @@ function isPhone(value) {
   return String(value || "").replace(/\D/g, "").length >= 7;
 }
 
+function grooveOrderCopy(garment, categoryId) {
+  const hats =
+    "Choose Bucket hat - Acid wash grey, or Baseball hat - Acid wash black.";
+  const tees = "Choose White, Black or Blue.";
+  const send = "Add a phone number and send. Public visitors do not see this.";
+  if (categoryId === "hats") {
+    return {
+      title: "Order hats.",
+      steps: ["Set quantities by size (XS–XXL).", hats, send],
+    };
+  }
+  if (categoryId === "crop-top") {
+    return {
+      title: "Order the crop top.",
+      steps: ["Set quantities by size (XS–XXL).", tees, send],
+    };
+  }
+  if (categoryId === "t-shirts") {
+    return {
+      title: "Order the oversized T-shirt.",
+      steps: ["Set quantities by size (XS–XXL).", tees, send],
+    };
+  }
+  return {
+    title: "Place a 7th edition order.",
+    steps: [
+      "Choose Oversized T-shirt, Crop top or Hats.",
+      "Set quantities by size (XS–XXL).",
+      garment?.id === "groove-hats" ? hats : tees,
+      send,
+    ],
+  };
+}
+
 export default function OrderPanel({ user, slug, gender = null, categoryId = null }) {
   const lookGarments = useMemo(
     () => (categoryId ? garmentsForLook(slug, gender, categoryId) : garmentsForBrand(slug)),
@@ -67,9 +101,18 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
   );
 
   const load = async () => {
-    const [p, o] = await Promise.all([fetchProducts(), fetchOrders()]);
-    setProducts(p.products || []);
-    setOrders(o.orders || []);
+    const [productsResult, ordersResult] = await Promise.allSettled([
+      fetchProducts(),
+      fetchOrders(),
+    ]);
+    if (productsResult.status === "fulfilled") {
+      setProducts(productsResult.value.products || []);
+    } else {
+      throw productsResult.reason;
+    }
+    if (ordersResult.status === "fulfilled") {
+      setOrders(ordersResult.value.orders || []);
+    }
   };
 
   useEffect(() => {
@@ -97,6 +140,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
     setGarmentId(next.id);
     setSizeLines(emptyLines(next.sizes));
     setSpecs(emptySpecs(next.fields));
+    setSent(false);
     if (!gender) {
       setFitGender(next.genders.includes("shared") ? "shared" : "");
     }
@@ -157,7 +201,11 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
     }
     for (const field of garment.fields || []) {
       if (!(specs[field.id] || "").trim()) {
-        setError(`Write the ${field.label.toLowerCase()}.`);
+        setError(
+          field.options
+            ? `Choose a ${field.label.toLowerCase()}.`
+            : `Write the ${field.label.toLowerCase()}.`
+        );
         return;
       }
     }
@@ -176,7 +224,11 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
             : fitGender);
     const product = matchCatalogProduct(products, garment, chosenGender);
     if (!product) {
-      setError("No catalog product matches this garment.");
+      setError(
+        products.length
+          ? "No catalog product matches this garment."
+          : "Your catalog is not set up yet. Contact the studio."
+      );
       return;
     }
     const sexLine = garment.sex
@@ -259,16 +311,28 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
 
   const sexLabel =
     garment?.sex === "male" ? "Male" : garment?.sex === "female" ? "Female" : null;
+  const isGroove = slug === "the-groove-hangout";
+  const grooveCopy = isGroove ? grooveOrderCopy(garment, categoryId) : null;
 
   return (
     <section className="order-panel" aria-label="Place an order">
       <div className="order-panel__intro">
         <p className="eyebrow">Production order</p>
-        <h2>Order from the {user.brand} catalog.</h2>
-        <p>
-          Pick the product, write the colour, and set quantities in XS–2XL. Bottoms need male or
-          female and a height of Short, Regular or Tall. Public visitors do not see this.
-        </p>
+        <h2>
+          {grooveCopy ? grooveCopy.title : `Order from the ${user.brand} catalog.`}
+        </h2>
+        {grooveCopy ? (
+          <ol className="order-panel__steps">
+            {grooveCopy.steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        ) : (
+          <p>
+            Pick the product, choose the fabric, and set quantities in XS–2XL. Bottoms need male or
+            female and a height of Short, Regular or Tall. Public visitors do not see this.
+          </p>
+        )}
       </div>
 
       {lookGarments.length ? (
@@ -424,7 +488,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                   onChange={(e) => setSpecs((s) => ({ ...s, [field.id]: e.target.value }))}
                   required
                 >
-                  <option value="">Select height</option>
+                  <option value="">{field.placeholder || "Select"}</option>
                   {field.options.map((opt) => (
                     <option key={opt} value={opt}>
                       {opt}
@@ -555,6 +619,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                 </strong>
                 <em>
                   {o.quantity} pcs
+                  {o.color ? ` · ${o.color}` : ""}
                   {formatSizeRun(o.sizes) ? ` · ${formatSizeRun(o.sizes)}` : ""}
                 </em>
                 <b

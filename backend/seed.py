@@ -16,7 +16,7 @@ SEED_CREDENTIALS = [
     {
         "email": "mwotaji@cosinecreate.com",
         "password": "Mwotaji123!",
-        "name": "Amina Mwotaji",
+        "name": "Muli Nguta",
         "role": "client",
         "brand": "MWOTAJI",
         "client_slug": "mwotaji",
@@ -24,7 +24,7 @@ SEED_CREDENTIALS = [
     {
         "email": "groove@cosinecreate.com",
         "password": "Groove123!",
-        "name": "The Groove Hangout",
+        "name": "Lincoln Mawira Kiogora",
         "role": "client",
         "brand": "The Groove Hangout",
         "client_slug": "the-groove-hangout",
@@ -52,8 +52,9 @@ MWOTAJI_LOOKS = [
 ]
 
 GROOVE_PRODUCTS = [
-    ("groove-tee", "Groove Hangout Tee", "tops", "unisex", None),
-    ("groove-hoodie", "Groove Hangout Hoodie", "hoodies", "unisex", None),
+    ("groove-oversized-t-shirt", "Oversized T-shirt", "tops", "unisex", None),
+    ("groove-crop-top", "Crop top", "tops", "unisex", None),
+    ("groove-hats", "Hats", "hats", "unisex", None),
 ]
 
 
@@ -61,6 +62,75 @@ def _add_product(**kwargs):
     product = Product(**kwargs)
     db.session.add(product)
     return product
+
+
+def _ensure_product(**kwargs):
+    product = Product.query.filter_by(
+        client_slug=kwargs["client_slug"], slug=kwargs["slug"]
+    ).first()
+    if product is None:
+        return _add_product(**kwargs)
+    for key, value in kwargs.items():
+        setattr(product, key, value)
+    return product
+
+
+def ensure_client_catalogs():
+    """Add MWOTAJI and Groove catalogs without wiping existing orders."""
+    mwotaji_products = {}
+    for slug, name, category, gender, look_ref in MWOTAJI_CATEGORIES:
+        mwotaji_products[slug] = _ensure_product(
+            client_slug="mwotaji",
+            brand="MWOTAJI",
+            slug=slug,
+            name=name,
+            category=category,
+            gender=gender,
+            look_ref=look_ref,
+            sku_kind="category",
+        )
+
+    for gender, category, looks in MWOTAJI_LOOKS:
+        for n in looks:
+            if gender:
+                slug = f"{gender}-{category}-{n:02d}"
+                name = f"{gender.title()} {category.title()} — Look {n:02d}"
+                look_ref = f"#/work/mwotaji/{gender}/{category}"
+            else:
+                slug = f"{category}-{n:02d}"
+                name = f"{category.title()} — Look {n:02d}"
+                look_ref = f"#/work/mwotaji/{category}"
+            _ensure_product(
+                client_slug="mwotaji",
+                brand="MWOTAJI",
+                slug=slug,
+                name=name,
+                category=category,
+                gender=gender or "shared",
+                look_ref=look_ref,
+                sku_kind="look",
+            )
+
+    groove_products = {}
+    for slug, name, category, gender, look_ref in GROOVE_PRODUCTS:
+        groove_products[slug] = _ensure_product(
+            client_slug="the-groove-hangout",
+            brand="The Groove Hangout",
+            slug=slug,
+            name=name,
+            category=category,
+            gender=gender,
+            look_ref=look_ref,
+            sku_kind="category",
+        )
+
+    keep = {slug for slug, *_ in GROOVE_PRODUCTS}
+    for product in Product.query.filter_by(client_slug="the-groove-hangout"):
+        if product.slug not in keep:
+            product.sku_kind = "retired"
+
+    db.session.commit()
+    return mwotaji_products, groove_products
 
 
 def load_fabrics():
@@ -115,6 +185,31 @@ def ensure_textiles_catalog_product():
     return product
 
 
+def ensure_client_users():
+    """Keep founder names on existing accounts without wiping passwords or orders."""
+    for row in SEED_CREDENTIALS:
+        if row["role"] != "client":
+            continue
+        user = User.query.filter_by(email=row["email"].lower()).first()
+        if user is None:
+            db.session.add(
+                User(
+                    email=row["email"].lower(),
+                    password_hash=hash_password(row["password"]),
+                    name=row["name"],
+                    role=row["role"],
+                    brand=row["brand"],
+                    client_slug=row["client_slug"],
+                )
+            )
+        else:
+            user.name = row["name"]
+            user.brand = row["brand"]
+            user.role = row["role"]
+            user.client_slug = row["client_slug"]
+    db.session.commit()
+
+
 def ensure_textiles():
     """Add buyer + mill list without wiping existing orders."""
     buyer = User.query.filter_by(email=BUYER_CREDENTIAL["email"]).first()
@@ -158,58 +253,9 @@ def seed_database():
 
     db.session.flush()
 
-    mwotaji_products = {}
-    for slug, name, category, gender, look_ref in MWOTAJI_CATEGORIES:
-        product = _add_product(
-            client_slug="mwotaji",
-            brand="MWOTAJI",
-            slug=slug,
-            name=name,
-            category=category,
-            gender=gender,
-            look_ref=look_ref,
-            sku_kind="category",
-        )
-        mwotaji_products[slug] = product
-
-    for gender, category, looks in MWOTAJI_LOOKS:
-        for n in looks:
-            if gender:
-                slug = f"{gender}-{category}-{n:02d}"
-                name = f"{gender.title()} {category.title()} — Look {n:02d}"
-                look_ref = f"#/work/mwotaji/{gender}/{category}"
-            else:
-                slug = f"{category}-{n:02d}"
-                name = f"{category.title()} — Look {n:02d}"
-                look_ref = f"#/work/mwotaji/{category}"
-            _add_product(
-                client_slug="mwotaji",
-                brand="MWOTAJI",
-                slug=slug,
-                name=name,
-                category=category,
-                gender=gender or "shared",
-                look_ref=look_ref,
-                sku_kind="look",
-            )
-
+    mwotaji_products, groove_products = ensure_client_catalogs()
     load_fabrics()
     ensure_textiles_catalog_product()
-
-    groove_products = {}
-    for slug, name, category, gender, look_ref in GROOVE_PRODUCTS:
-        product = _add_product(
-            client_slug="the-groove-hangout",
-            brand="The Groove Hangout",
-            slug=slug,
-            name=name,
-            category=category,
-            gender=gender,
-            look_ref=look_ref,
-            sku_kind="category",
-        )
-        groove_products[slug] = product
-
     db.session.flush()
 
     mwotaji = users["mwotaji@cosinecreate.com"]
@@ -232,7 +278,7 @@ def seed_database():
     db.session.add(
         Order(
             user_id=groove.id,
-            product_id=groove_products["groove-tee"].id,
+            product_id=groove_products["groove-oversized-t-shirt"].id,
             client_slug="the-groove-hangout",
             contact_name=groove.name,
             brand="The Groove Hangout",

@@ -1,6 +1,7 @@
-from flask import Flask, g, jsonify, request, send_file
+from flask import Flask, current_app, g, jsonify, request, send_file
 from flask_cors import CORS
 from sqlalchemy import inspect, text
+from sqlalchemy.exc import SQLAlchemyError
 from io import BytesIO
 from pathlib import Path
 import json
@@ -28,8 +29,35 @@ GARMENT_IDS = {
     "female-sweatpants",
     "male-sweatpants",
     "vest",
+    "crop-top",
+    "groove-oversized-t-shirt",
+    "groove-crop-top",
+    "groove-hats",
 }
 HEIGHTS = {"Short", "Regular", "Tall"}
+MWOTAJI_TSHIRT_FABRICS = {
+    "Black - T-shirt": "T-shirt",
+    "Off White - T-shirt": "T-shirt",
+}
+MWOTAJI_FLEECE_FABRICS = {
+    "Black - Fleece": "Fleece",
+    "Teal - Fleece": "Fleece",
+}
+MWOTAJI_FABRICS_FOR_GARMENT = {
+    "oversized-t-shirt": MWOTAJI_TSHIRT_FABRICS,
+    "vest": MWOTAJI_TSHIRT_FABRICS,
+    "crop-top": MWOTAJI_TSHIRT_FABRICS,
+    "hoodie": MWOTAJI_FLEECE_FABRICS,
+    "sweatshirt": MWOTAJI_FLEECE_FABRICS,
+    "female-sweatpants": MWOTAJI_FLEECE_FABRICS,
+    "male-sweatpants": MWOTAJI_FLEECE_FABRICS,
+}
+GROOVE_TEE_COLORS = {"White", "Black", "Blue"}
+GROOVE_TEE_GARMENTS = {"groove-oversized-t-shirt", "groove-crop-top"}
+GROOVE_HAT_OPTIONS = {
+    "Bucket hat - Acid wash grey": "Bucket hat",
+    "Baseball hat - Acid wash black": "Baseball hat",
+}
 INQUIRY_MAKING = {"Apparel", "Accessories", "Other"}
 INQUIRY_STAGES = {"idea", "sample", "produce", "buy", "reorder"}
 FABRIC_UNITS = {"m", "kg"}
@@ -126,13 +154,15 @@ def create_app():
     with app.app_context():
         db.create_all()
         ensure_schema()
-        from seed import ensure_textiles, seed_database
+        from seed import ensure_client_catalogs, ensure_client_users, ensure_textiles, seed_database
 
         seed_empty = os.environ.get("SEED_IF_EMPTY", "").lower() in ("1", "true", "yes")
         if seed_empty and User.query.count() == 0:
             seed_database()
         else:
             ensure_textiles()
+            ensure_client_users()
+            ensure_client_catalogs()
 
     register_routes(app)
     register_cli(app)
@@ -152,6 +182,17 @@ def register_cli(app):
             print(f"  {row['email']}  /  {row['password']}  ({row['role']}"
                   f"{', ' + row['brand'] if row['brand'] else ''})")
 
+    @app.cli.command("ensure-catalogs")
+    def ensure_catalogs_command():
+        """Add missing client catalogs without wiping orders."""
+        from seed import ensure_client_catalogs, ensure_client_users, ensure_textiles
+
+        ensure_textiles()
+        ensure_client_users()
+        mwotaji, groove = ensure_client_catalogs()
+        print(f"MWOTAJI category products: {len(mwotaji)}")
+        print(f"Groove products: {len(groove)}")
+
 
 def textiles_catalog_product():
     from seed import ensure_textiles_catalog_product
@@ -160,9 +201,13 @@ def textiles_catalog_product():
 
 
 def create_garment_order(user, body):
-    product_id = body.get("product_id")
-    if product_id is None:
+    raw_product_id = body.get("product_id")
+    if raw_product_id is None or raw_product_id == "":
         return jsonify({"error": "product_id is required"}), 400
+    try:
+        product_id = int(raw_product_id)
+    except (TypeError, ValueError):
+        return jsonify({"error": "product_id must be a number"}), 400
 
     product = db.session.get(Product, product_id)
     if product is None:
@@ -211,6 +256,21 @@ def create_garment_order(user, body):
     color = (body.get("color") or "").strip() or None
     if not color:
         return jsonify({"error": "A colour is required"}), 400
+    if garment in GROOVE_TEE_GARMENTS and color not in GROOVE_TEE_COLORS:
+        return jsonify({"error": "Colour must be White, Black or Blue"}), 400
+    fabric = (body.get("fabric") or "").strip() or None
+    if garment == "groove-hats":
+        if color not in GROOVE_HAT_OPTIONS:
+            return jsonify({"error": "Choose a bucket hat or baseball hat"}), 400
+        fabric = GROOVE_HAT_OPTIONS[color]
+    if user.client_slug == "mwotaji":
+        allowed = MWOTAJI_FABRICS_FOR_GARMENT.get(garment) or {
+            **MWOTAJI_TSHIRT_FABRICS,
+            **MWOTAJI_FLEECE_FABRICS,
+        }
+        if color not in allowed:
+            return jsonify({"error": "Choose a fabric from the MWOTAJI list"}), 400
+        fabric = allowed[color]
     height = (body.get("height") or "").strip() or None
     if garment in ("female-sweatpants", "male-sweatpants"):
         if not height:
@@ -219,7 +279,6 @@ def create_garment_order(user, body):
             return jsonify({"error": "Height must be Short, Regular or Tall"}), 400
     elif height and height not in HEIGHTS:
         return jsonify({"error": "Height must be Short, Regular or Tall"}), 400
-    fabric = (body.get("fabric") or "").strip() or None
     notes = (body.get("notes") or "").strip() or None
     phone = parse_phone(body.get("phone"))
     if not phone:
@@ -247,8 +306,13 @@ def create_garment_order(user, body):
     if not order.contact_name or not order.brand or not order.email:
         return jsonify({"error": "name, brand, and email are required"}), 400
 
-    db.session.add(order)
-    db.session.commit()
+    try:
+        db.session.add(order)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        current_app.logger.exception("Could not save the order")
+        return jsonify({"error": "Could not save the order"}), 500
     return jsonify({"order": order.to_public()}), 201
 
 
@@ -328,8 +392,13 @@ def create_fabric_order(user, body):
     if not order.contact_name or not order.brand or not order.email:
         return jsonify({"error": "name, brand, and email are required"}), 400
 
-    db.session.add(order)
-    db.session.commit()
+    try:
+        db.session.add(order)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        current_app.logger.exception("Could not save the order")
+        return jsonify({"error": "Could not save the order"}), 500
     return jsonify({"order": order.to_public()}), 201
 
 

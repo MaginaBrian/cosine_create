@@ -1,15 +1,46 @@
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL"];
+const GROOVE_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+const SIZE_RUN_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "XXL"];
 
-const COLOR_FIELD = {
+export const MWOTAJI_TSHIRT_FABRICS = ["Black - T-shirt", "Off White - T-shirt"];
+export const MWOTAJI_FLEECE_FABRICS = ["Black - Fleece", "Teal - Fleece"];
+
+function fabricField(options) {
+  return {
+    id: "color",
+    label: "Fabric",
+    placeholder: "Select fabric",
+    required: true,
+    options,
+  };
+}
+
+export const GROOVE_TEE_COLORS = ["White", "Black", "Blue"];
+export const GROOVE_HAT_OPTIONS = [
+  "Bucket hat - Acid wash grey",
+  "Baseball hat - Acid wash black",
+];
+
+const GROOVE_TEE_COLOR_FIELD = {
   id: "color",
-  label: "Type of color",
-  placeholder: "Write the colourway",
+  label: "Colour",
+  placeholder: "Select colour",
   required: true,
+  options: GROOVE_TEE_COLORS,
+};
+
+const GROOVE_HAT_FIELD = {
+  id: "color",
+  label: "Hat",
+  placeholder: "Select hat",
+  required: true,
+  options: GROOVE_HAT_OPTIONS,
 };
 
 const HEIGHT_FIELD = {
   id: "height",
   label: "Height",
+  placeholder: "Select height",
   required: true,
   options: ["Short", "Regular", "Tall"],
 };
@@ -22,7 +53,7 @@ export const GARMENTS = [
     genders: ["men", "women"],
     brands: ["mwotaji"],
     sizes: SIZES,
-    fields: [COLOR_FIELD],
+    fields: [fabricField(MWOTAJI_TSHIRT_FABRICS)],
   },
   {
     id: "hoodie",
@@ -31,7 +62,7 @@ export const GARMENTS = [
     genders: ["shared"],
     brands: ["mwotaji"],
     sizes: SIZES,
-    fields: [COLOR_FIELD],
+    fields: [fabricField(MWOTAJI_FLEECE_FABRICS)],
   },
   {
     id: "sweatshirt",
@@ -40,7 +71,7 @@ export const GARMENTS = [
     genders: ["shared"],
     brands: ["mwotaji"],
     sizes: SIZES,
-    fields: [COLOR_FIELD],
+    fields: [fabricField(MWOTAJI_FLEECE_FABRICS)],
   },
   {
     id: "female-sweatpants",
@@ -51,7 +82,7 @@ export const GARMENTS = [
     sizes: SIZES,
     sex: "female",
     fields: [
-      COLOR_FIELD,
+      fabricField(MWOTAJI_FLEECE_FABRICS),
       { ...HEIGHT_FIELD, label: "Height (female bottoms)" },
     ],
   },
@@ -64,9 +95,18 @@ export const GARMENTS = [
     sizes: SIZES,
     sex: "male",
     fields: [
-      COLOR_FIELD,
+      fabricField(MWOTAJI_FLEECE_FABRICS),
       { ...HEIGHT_FIELD, label: "Height (male bottoms)" },
     ],
+  },
+  {
+    id: "crop-top",
+    name: "Crop top",
+    category: "tops",
+    genders: ["women"],
+    brands: ["mwotaji"],
+    sizes: SIZES,
+    fields: [fabricField(MWOTAJI_TSHIRT_FABRICS)],
   },
   {
     id: "vest",
@@ -76,7 +116,7 @@ export const GARMENTS = [
     brands: ["mwotaji"],
     sizes: SIZES,
     fields: [
-      COLOR_FIELD,
+      fabricField(MWOTAJI_TSHIRT_FABRICS),
       {
         id: "sleeve",
         label: "Sleeve",
@@ -84,6 +124,33 @@ export const GARMENTS = [
         required: true,
       },
     ],
+  },
+  {
+    id: "groove-oversized-t-shirt",
+    name: "Oversized T-shirt",
+    category: "t-shirts",
+    genders: ["shared"],
+    brands: ["the-groove-hangout"],
+    sizes: GROOVE_SIZES,
+    fields: [GROOVE_TEE_COLOR_FIELD],
+  },
+  {
+    id: "groove-crop-top",
+    name: "Crop top",
+    category: "crop-top",
+    genders: ["shared"],
+    brands: ["the-groove-hangout"],
+    sizes: GROOVE_SIZES,
+    fields: [GROOVE_TEE_COLOR_FIELD],
+  },
+  {
+    id: "groove-hats",
+    name: "Hats",
+    category: "hats",
+    genders: ["shared"],
+    brands: ["the-groove-hangout"],
+    sizes: GROOVE_SIZES,
+    fields: [GROOVE_HAT_FIELD],
   },
 ];
 
@@ -101,6 +168,10 @@ export function garmentsForLook(slug, gender, categoryId) {
 
 export function matchCatalogProduct(products, garment, gender) {
   const list = products || [];
+  const bySlug = list.find(
+    (p) => p.sku_kind === "category" && p.slug === garment.id
+  );
+  if (bySlug) return bySlug;
   const wantedGender =
     gender || (garment.genders.includes("shared") ? "shared" : garment.genders[0]);
   return (
@@ -115,7 +186,7 @@ export function matchCatalogProduct(products, garment, gender) {
 
 export function formatSizeRun(breakdown) {
   if (!breakdown || typeof breakdown !== "object") return "";
-  const order = SIZES;
+  const order = SIZE_RUN_ORDER;
   return order
     .filter((size) => Number(breakdown[size]) > 0)
     .map((size) => `${size} ${breakdown[size]}`)

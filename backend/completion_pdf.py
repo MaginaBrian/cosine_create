@@ -11,8 +11,12 @@ GARMENT_NAMES = {
     "female-sweatpants": "Female sweatpants",
     "male-sweatpants": "Male sweatpants",
     "vest": "Vest",
+    "crop-top": "Crop top",
+    "groove-oversized-t-shirt": "Oversized T-shirt",
+    "groove-crop-top": "Crop top",
+    "groove-hats": "Hats",
 }
-SIZE_ORDER = ["XS", "S", "M", "L", "XL", "2XL"]
+SIZE_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "XXL"]
 
 
 def _text(value, fallback="-"):

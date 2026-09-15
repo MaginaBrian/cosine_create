@@ -25,6 +25,17 @@
   max-width: 46ch;
 }
 
+.order-panel__steps {
+  margin-top: 1.15rem;
+  padding-left: 1.15rem;
+  max-width: 52ch;
+  color: var(--muted);
+}
+
+.order-panel__steps li + li {
+  margin-top: 0.45rem;
+}
+
 .order-panel__form {
   display: flex;
   flex-direction: column;

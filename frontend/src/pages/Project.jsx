@@ -5,6 +5,7 @@ import { fetchFabrics } from "../api";
 import OrderPanel from "../components/OrderPanel";
 import FabricOrderPanel from "../components/FabricOrderPanel";
 import TextilesCatalog from "../components/TextilesCatalog";
+import GrooveCatalog from "../components/GrooveCatalog";
 import "./Project.css";
 
 function Category({ slug, gender, category, look, hideTitle }) {
@@ -139,6 +140,7 @@ function HeroBackground({ image, video }) {
 export default function Project({ slug, user }) {
   const project = getProject(slug);
   const isTextiles = slug === "cosine-textiles";
+  const isGroove = slug === "the-groove-hangout";
   const canOrder = canOrderTextiles(user);
   const [fabrics, setFabrics] = useState([]);
   const [fabricError, setFabricError] = useState("");
@@ -164,46 +166,60 @@ export default function Project({ slug, user }) {
   }
 
   const looks = project.looks || {};
-  const credit = project.credit || `Work done for ${project.client}`;
+  const credit = project.credit;
+  const grooveOwner = isGroove && isBrandOwner(user, slug);
 
   return (
     <article className="project">
-      <header className={`project-hero${project.hero || project.heroVideo ? " project-hero--photo" : ""}`}>
-        <HeroBackground image={project.hero} video={project.heroVideo} />
-        <div className="project-hero__copy">
+      {grooveOwner ? (
+        <header className="project-hero project-hero--studio">
+          <p className="eyebrow">Studio order</p>
           <h1>{project.client}</h1>
-          {project.hook ? (
-            project.hookStyle === "edition" ? (
-              <p className="project-hero__hook project-hero__hook--edition">
-                <span className="project-hero__edition-rule" aria-hidden="true" />
-                <span className="project-hero__edition">
-                  <span className="project-hero__edition-num">7</span>
-                  <sup>th</sup>
-                  <span className="project-hero__edition-label">edition</span>
-                </span>
-                <span className="project-hero__edition-rule" aria-hidden="true" />
-              </p>
-            ) : project.hookStyle === "kicker" ? (
-              <p className="project-hero__hook project-hero__hook--kicker">
-                <span className="project-hero__edition-rule" aria-hidden="true" />
-                <span className="project-hero__kicker">{project.hook}</span>
-                <span className="project-hero__edition-rule" aria-hidden="true" />
-              </p>
-            ) : (
-              <p className="project-hero__hook">{project.hook}</p>
-            )
-          ) : null}
-          {project.gallery ? (
-            <p className="project-hero__credit">
-              <a href={project.gallery} target="_blank" rel="noreferrer">
-                {credit}
-              </a>
-            </p>
-          ) : (
-            <p className="project-hero__credit">{credit}</p>
-          )}
-        </div>
-      </header>
+          <p className="project-hero__hook">
+            Signed in as {user.name}. Place a 7th edition order below, then open a product if you
+            want the looks.
+          </p>
+        </header>
+      ) : (
+        <header className={`project-hero${project.hero || project.heroVideo ? " project-hero--photo" : ""}`}>
+          <HeroBackground image={project.hero} video={project.heroVideo} />
+          <div className="project-hero__copy">
+            <h1>{project.client}</h1>
+            {project.hook ? (
+              project.hookStyle === "edition" ? (
+                <p className="project-hero__hook project-hero__hook--edition">
+                  <span className="project-hero__edition-rule" aria-hidden="true" />
+                  <span className="project-hero__edition">
+                    <span className="project-hero__edition-num">7</span>
+                    <sup>th</sup>
+                    <span className="project-hero__edition-label">edition</span>
+                  </span>
+                  <span className="project-hero__edition-rule" aria-hidden="true" />
+                </p>
+              ) : project.hookStyle === "kicker" ? (
+                <p className="project-hero__hook project-hero__hook--kicker">
+                  <span className="project-hero__edition-rule" aria-hidden="true" />
+                  <span className="project-hero__kicker">{project.hook}</span>
+                  <span className="project-hero__edition-rule" aria-hidden="true" />
+                </p>
+              ) : (
+                <p className="project-hero__hook">{project.hook}</p>
+              )
+            ) : null}
+            {credit ? (
+              project.gallery ? (
+                <p className="project-hero__credit">
+                  <a href={project.gallery} target="_blank" rel="noreferrer">
+                    {credit}
+                  </a>
+                </p>
+              ) : (
+                <p className="project-hero__credit">{credit}</p>
+              )
+            ) : null}
+          </div>
+        </header>
+      )}
 
       {isTextiles ? (
         fabricError ? (
@@ -223,6 +239,13 @@ export default function Project({ slug, user }) {
             ) : null}
           </>
         )
+      ) : grooveOwner ? (
+        <>
+          <OrderPanel user={user} slug={slug} />
+          <GrooveCatalog owner />
+        </>
+      ) : isGroove ? (
+        <GrooveCatalog />
       ) : (
         <>
           <section className="project-looks" aria-label="Looks">
@@ -246,7 +269,7 @@ export default function Project({ slug, user }) {
         </>
       )}
 
-      {isBrandOwner(user, slug) ? <OrderPanel user={user} slug={slug} /> : null}
+      {!grooveOwner && isBrandOwner(user, slug) ? <OrderPanel user={user} slug={slug} /> : null}
     </article>
   );
 }

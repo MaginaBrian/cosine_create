@@ -74,6 +74,12 @@ export const SHARED_CATEGORIES = [
   { id: "sweatshirts", label: "Sweatshirts" },
 ];
 
+export const GROOVE_CATEGORIES = [
+  { id: "t-shirts", label: "Oversized T-shirt" },
+  { id: "crop-top", label: "Crop top" },
+  { id: "hats", label: "Hats" },
+];
+
 function emptyCategory() {
   return { cover: null, items: [] };
 }
@@ -190,6 +196,36 @@ mwotajiLooks.shared.sweatshirts = {
   ],
 };
 
+const grooveLooks = emptyLooks();
+grooveLooks.shared["t-shirts"] = {
+  cover: "/work/groove-hangout/t-shirts/cover.jpg",
+  carousel: true,
+  items: [
+    { front: "/work/groove-hangout/t-shirts/01.jpg" },
+    { front: "/work/groove-hangout/t-shirts/02.jpg" },
+    { front: "/work/groove-hangout/t-shirts/03.jpg" },
+    { front: "/work/groove-hangout/t-shirts/04.jpg" },
+  ],
+};
+grooveLooks.shared["crop-top"] = {
+  cover: "/work/groove-hangout/crop-top/cover.jpg",
+  carousel: true,
+  items: [
+    { front: "/work/groove-hangout/crop-top/01.jpg" },
+    { front: "/work/groove-hangout/crop-top/02.jpg" },
+    { front: "/work/groove-hangout/crop-top/03.jpg" },
+    { front: "/work/groove-hangout/crop-top/04.jpg" },
+  ],
+};
+grooveLooks.shared["hats"] = {
+  cover: "/work/groove-hangout/hats/cover.jpg",
+  carousel: true,
+  items: [
+    { front: "/work/groove-hangout/hats/01.jpg" },
+    { front: "/work/groove-hangout/hats/02.jpg" },
+  ],
+};
+
 export const PROJECTS = [
   {
     slug: "cosine-create",
@@ -206,8 +242,7 @@ export const PROJECTS = [
     slug: "cosine-textiles",
     name: "Cosine Textiles",
     client: "Cosine Textiles",
-    hook: "Available in house textiles",
-    credit: "Work done for Cosine Textiles",
+    hook: "Available inhouse fabrics and accessories",
     image: "/work/cosine-textiles.jpg",
     imageFit: "portrait",
     looks: emptyLooks(),
@@ -233,7 +268,7 @@ export const PROJECTS = [
     credit: "Work done for The Groove Hangout",
     image: "/work/groove-hangout.jpg",
     heroVideo: "/videos/groove-hangout.mp4?v=2",
-    looks: emptyLooks(),
+    looks: grooveLooks,
   },
 ];
 
@@ -245,7 +280,8 @@ export function getLook(slug, gender, categoryId) {
   const project = getProject(slug);
   const category =
     CLOTHING_CATEGORIES.find((c) => c.id === categoryId) ||
-    SHARED_CATEGORIES.find((c) => c.id === categoryId);
+    SHARED_CATEGORIES.find((c) => c.id === categoryId) ||
+    GROOVE_CATEGORIES.find((c) => c.id === categoryId);
   const look = gender
     ? project?.looks?.[gender]?.[categoryId]
     : project?.looks?.shared?.[categoryId];
