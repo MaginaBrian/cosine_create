@@ -5,7 +5,7 @@ export default function Logo() {
     <img
       className="brand-lockup"
       src="/lockup.png?v=3"
-      alt=""
+      alt="Cosine Create"
       width="2874"
       height="339"
     />

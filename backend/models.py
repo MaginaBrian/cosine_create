@@ -22,6 +22,14 @@ class User(db.Model):
     brand = db.Column(db.String(120), nullable=True)
 
     orders = db.relationship("Order", back_populates="user")
+    login_emails = db.relationship("UserEmail", back_populates="user", cascade="all, delete-orphan")
+
+    def notify_emails(self):
+        emails = {self.email.lower()}
+        for alias in self.login_emails or []:
+            if alias.email:
+                emails.add(alias.email.lower())
+        return sorted(emails)
 
     def to_public(self):
         return {
@@ -32,6 +40,27 @@ class User(db.Model):
             "brand": self.brand,
             "client_slug": self.client_slug,
         }
+
+
+class UserEmail(db.Model):
+    __tablename__ = "user_emails"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+
+    user = db.relationship("User", back_populates="login_emails")
+
+
+def find_user_by_email(email):
+    key = (email or "").strip().lower()
+    if not key:
+        return None
+    user = User.query.filter_by(email=key).first()
+    if user:
+        return user
+    alias = UserEmail.query.filter_by(email=key).first()
+    return alias.user if alias else None
 
 
 class Product(db.Model):
@@ -85,6 +114,7 @@ class Order(db.Model):
     fabric = db.Column(db.String(200), nullable=True)
     fabric_id = db.Column(db.Integer, db.ForeignKey("fabrics.id"), nullable=True)
     unit = db.Column(db.String(20), nullable=True)
+    items_json = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
 
     user = db.relationship("User", back_populates="orders")
@@ -99,6 +129,29 @@ class Order(db.Model):
         except (TypeError, ValueError):
             return None
         return data if isinstance(data, dict) else None
+
+    def parsed_items(self):
+        if self.items_json:
+            try:
+                data = json.loads(self.items_json)
+            except (TypeError, ValueError):
+                data = None
+            if isinstance(data, list) and data:
+                return [row for row in data if isinstance(row, dict)]
+        if self.fabric_id:
+            return []
+        return [
+            {
+                "product_id": self.product_id,
+                "product_name": self.product.name if self.product else None,
+                "garment": self.garment,
+                "quantity": self.quantity,
+                "sizes": self.parsed_sizes(),
+                "color": self.color,
+                "height": self.height,
+                "fabric": self.fabric,
+            }
+        ]
 
     def to_public(self, include_user=False):
         created = self.created_at
@@ -122,6 +175,7 @@ class Order(db.Model):
             "notes": self.notes,
             "garment": self.garment,
             "sizes": self.parsed_sizes(),
+            "items": self.parsed_items(),
             "color": self.color,
             "rib": self.rib,
             "height": self.height,

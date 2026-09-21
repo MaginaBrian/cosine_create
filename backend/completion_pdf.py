@@ -11,8 +11,13 @@ GARMENT_NAMES = {
     "female-sweatpants": "Female sweatpants",
     "male-sweatpants": "Male sweatpants",
     "vest": "Vest",
+    "crop-top": "Crop top",
+    "groove-oversized-t-shirt": "Oversized T-shirt",
+    "groove-crop-top": "Crop turn-up",
+    "groove-hats": "Hats",
+    "groove-tags": "Tags",
 }
-SIZE_ORDER = ["XS", "S", "M", "L", "XL", "2XL"]
+SIZE_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "XXL", "Standard"]
 
 
 def _text(value, fallback="-"):
@@ -32,8 +37,8 @@ def _format_when(value):
     return value.astimezone(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
 
 
-def _size_run(order):
-    sizes = order.parsed_sizes() or {}
+def _size_run(sizes):
+    sizes = sizes or {}
     parts = []
     for size in SIZE_ORDER:
         qty = sizes.get(size)
@@ -45,6 +50,13 @@ def _size_run(order):
     return " / ".join(parts) if parts else "-"
 
 
+def _item_name(item):
+    garment = (item or {}).get("garment")
+    if garment and garment in GARMENT_NAMES:
+        return GARMENT_NAMES[garment]
+    return (item or {}).get("product_name") or "-"
+
+
 def _product_name(order):
     mill = getattr(order, "mill_line", None)
     if mill:
@@ -54,11 +66,36 @@ def _product_name(order):
         if mill.code:
             bits.insert(0, mill.code)
         return " · ".join(bits)
+    items = order.parsed_items() if hasattr(order, "parsed_items") else []
+    names = [_item_name(item) for item in items if _item_name(item) != "-"]
+    if names:
+        return ", ".join(names)
     if order.garment and order.garment in GARMENT_NAMES:
         return GARMENT_NAMES[order.garment]
     if order.product:
         return order.product.name
     return "-"
+
+
+def _item_lines(order):
+    mill = getattr(order, "mill_line", None)
+    if mill:
+        return []
+    items = order.parsed_items() if hasattr(order, "parsed_items") else []
+    if len(items) < 2:
+        return []
+    rows = []
+    for index, item in enumerate(items, start=1):
+        bits = [
+            _item_name(item),
+            f"{item.get('quantity') or 0} pcs",
+            _size_run(item.get("sizes")),
+            item.get("color"),
+            item.get("height"),
+            item.get("fabric"),
+        ]
+        rows.append((f"Line {index}", " · ".join(str(bit) for bit in bits if bit and bit != "-")))
+    return rows
 
 
 def _quantity(order):
@@ -96,6 +133,7 @@ def build_completion_pdf(order):
     pdf.set_line_width(0.2)
     pdf.line(20, 66, 190, 66)
 
+    items = order.parsed_items() if hasattr(order, "parsed_items") else []
     rows = [
         ("Brand", order.brand),
         ("Contact", order.contact_name),
@@ -103,14 +141,24 @@ def build_completion_pdf(order):
         ("Phone", getattr(order, "phone", None)),
         ("Product", _product_name(order)),
         ("Quantity", _quantity(order)),
-        ("Size", _size_run(order)),
-        ("Color", order.color),
-        ("Rib", getattr(order, "rib", None)),
-        ("Height", order.height),
-        ("Notes", order.notes),
-        ("Ordered", _format_when(order.created_at)),
-        ("Completed", _format_when(utcnow())),
     ]
+    rows.extend(_item_lines(order))
+    if len(items) < 2:
+        rows.extend(
+            [
+                ("Size", _size_run(order.parsed_sizes())),
+                ("Color", order.color),
+                ("Height", order.height),
+            ]
+        )
+    rows.extend(
+        [
+            ("Rib", getattr(order, "rib", None)),
+            ("Notes", order.notes),
+            ("Ordered", _format_when(order.created_at)),
+            ("Completed", _format_when(utcnow())),
+        ]
+    )
 
     y = 76
     for label, value in rows:

@@ -1,30 +1,8 @@
-import { useState } from "react";
 import { getLook } from "../data";
 import { isBrandOwner } from "../clientHome";
 import OrderPanel from "../components/OrderPanel";
+import ProductSlide from "../components/ProductSlide";
 import "./Lookbook.css";
-
-function ProductSlide({ front, back, alt }) {
-  const [flipped, setFlipped] = useState(false);
-
-  return (
-    <figure
-      className={`product-slide${flipped ? " is-flipped" : ""}`}
-      onClick={() => setFlipped((v) => !v)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          setFlipped((v) => !v);
-        }
-      }}
-      tabIndex={0}
-      aria-label={`${alt}. Hover or tap to see the back.`}
-    >
-      <img src={front} alt={alt} className="product-slide__front" />
-      {back ? <img src={back} alt="" className="product-slide__back" /> : null}
-    </figure>
-  );
-}
 
 export default function Lookbook({ slug, gender, categoryId, user }) {
   const data = getLook(slug, gender, categoryId);
@@ -43,6 +21,15 @@ export default function Lookbook({ slug, gender, categoryId, user }) {
   const { project, category, look } = data;
   const genderLabel = gender === "women" ? "Women" : gender === "men" ? "Men" : null;
   const items = look.items || [];
+  const hasBacks = items.some((item) => item.back);
+  const canPlaceOrder = isBrandOwner(user, slug);
+  const hint = canPlaceOrder
+    ? hasBacks
+      ? "Hover or tap a look to see the back. Add this product, then go back to the catalog for the next one."
+      : "Add this product, then go back to the catalog for the next one."
+    : hasBacks
+      ? "Hover or tap a look to see the back."
+      : null;
 
   return (
     <article className="lookbook">
@@ -57,7 +44,7 @@ export default function Lookbook({ slug, gender, categoryId, user }) {
           ) : null}
         </p>
         <h1>{category.label}</h1>
-        <p className="lookbook__hint">Hover or tap a look to see the back.</p>
+        {hint ? <p className="lookbook__hint">{hint}</p> : null}
       </header>
 
       <div className="lookbook__slides">
@@ -71,7 +58,7 @@ export default function Lookbook({ slug, gender, categoryId, user }) {
         ))}
       </div>
 
-      {isBrandOwner(user, slug) ? (
+      {canPlaceOrder ? (
         <OrderPanel user={user} slug={slug} gender={gender} categoryId={categoryId} />
       ) : null}
     </article>

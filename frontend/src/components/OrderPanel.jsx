@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { createOrder, fetchOrders, fetchProducts } from "../api";
 import {
-  GARMENTS,
+  cartLineKey,
+  cartTotal,
+  clearCart,
+  loadCart,
+  mergeCartItem,
+  saveCart,
+} from "../orderCart";
+import {
+  fitForGarment,
   formatSizeRun,
-  garmentsForBrand,
   garmentsForLook,
   matchCatalogProduct,
 } from "../measurements";
+import PastOrders from "./PastOrders";
 import "./OrderPanel.css";
 
 function emptyLines(sizes) {
@@ -34,43 +42,131 @@ function isPhone(value) {
   return String(value || "").replace(/\D/g, "").length >= 7;
 }
 
+function goToClientHome(slug) {
+  window.location.hash = `#/work/${slug}`;
+}
+
+function grooveAddCopy(garment, categoryId) {
+  const hats = "Choose Bucket hat - Acid wash grey, or Baseball hat - Acid wash black.";
+  const tees = "Choose White, Black or Blue.";
+  const tags = "Choose Black, White or Green.";
+  if (categoryId === "hats") {
+    return { title: "Add hats.", steps: ["Set quantities by size.", hats, "Add, then pick the next product."] };
+  }
+  if (categoryId === "tags") {
+    return { title: "Add tags.", steps: ["Set the quantity.", tags, "Add, then pick the next product."] };
+  }
+  if (categoryId === "crop-top") {
+    return { title: "Add the crop turn-up.", steps: ["Set quantities by size (XS–XXL).", tees, "Add, then pick the next product."] };
+  }
+  if (categoryId === "t-shirts") {
+    return {
+      title: "Add the oversized T-shirt.",
+      steps: ["Set quantities by size (XS–XXL).", tees, "Add, then pick the next product."],
+    };
+  }
+  return {
+    title: "Add to the 7th edition order.",
+    steps: [
+      "Set quantities by size.",
+      garment?.id === "groove-hats" ? hats : garment?.id === "groove-tags" ? tags : tees,
+      "Add, then go back to the catalogue for the next product.",
+    ],
+  };
+}
+
+function CartList({ cart, onRemove }) {
+  const pieces = cartTotal(cart);
+  if (!cart.length) return null;
+  return (
+    <div className="order-cart">
+      <p className="eyebrow">This order</p>
+      <ul>
+        {cart.map((item) => (
+          <li key={item.id || cartLineKey(item)}>
+            <div>
+              <strong>{item.name || item.product_name || "Item"}</strong>
+              <span>
+                {[item.color, item.height, formatSizeRun(item.sizes), `${item.quantity} pcs`]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </div>
+            {onRemove ? (
+              <button
+                type="button"
+                className="order-size__remove"
+                onClick={() => onRemove(item.id)}
+              >
+                Remove
+              </button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      <p className="order-sizes__total">
+        {cart.length} {cart.length === 1 ? "product" : "products"} · {pieces} pcs
+      </p>
+    </div>
+  );
+}
+
 export default function OrderPanel({ user, slug, gender = null, categoryId = null }) {
+  const isAdd = Boolean(categoryId);
   const lookGarments = useMemo(
-    () => (categoryId ? garmentsForLook(slug, gender, categoryId) : garmentsForBrand(slug)),
-    [slug, gender, categoryId]
+    () => (isAdd ? garmentsForLook(slug, gender, categoryId) : []),
+    [isAdd, slug, gender, categoryId]
   );
 
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [garmentId, setGarmentId] = useState(lookGarments[0]?.id || "");
-  const [fitGender, setFitGender] = useState(gender || "");
   const [sizeLines, setSizeLines] = useState(() => emptyLines(lookGarments[0]?.sizes));
   const [specs, setSpecs] = useState(() => emptySpecs(lookGarments[0]?.fields));
   const [notes, setNotes] = useState("");
   const [phone, setPhone] = useState("");
-  const [productId, setProductId] = useState("");
-  const [simpleQty, setSimpleQty] = useState("");
-  const [simpleColor, setSimpleColor] = useState("");
+  const [cart, setCart] = useState(() => loadCart(slug));
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const catalog = useMemo(
-    () => (products || []).filter((p) => p.sku_kind === "category"),
-    [products]
-  );
-
   const garment = lookGarments.find((g) => g.id === garmentId) || null;
   const isBottoms = garment?.category === "bottoms";
-  const needsGender = Boolean(
-    garment && !gender && (isBottoms || garment.genders.includes("men"))
-  );
+  const isGroove = slug === "the-groove-hangout";
+
+  const persistCart = (next) => {
+    setCart(next);
+    saveCart(slug, next);
+  };
 
   const load = async () => {
-    const [p, o] = await Promise.all([fetchProducts(), fetchOrders()]);
-    setProducts(p.products || []);
-    setOrders(o.orders || []);
+    const requests = [fetchOrders()];
+    if (isAdd) requests.unshift(fetchProducts());
+    const results = await Promise.allSettled(requests);
+    if (isAdd) {
+      const productsResult = results[0];
+      const ordersResult = results[1];
+      if (productsResult.status === "fulfilled") {
+        setProducts(productsResult.value.products || []);
+      } else {
+        throw productsResult.reason;
+      }
+      if (ordersResult?.status === "fulfilled") {
+        setOrders(ordersResult.value.orders || []);
+      }
+      return;
+    }
+    const ordersResult = results[0];
+    if (ordersResult.status === "fulfilled") {
+      setOrders(ordersResult.value.orders || []);
+    } else {
+      throw ordersResult.reason;
+    }
   };
+
+  useEffect(() => {
+    setCart(loadCart(slug));
+  }, [slug]);
 
   useEffect(() => {
     load().catch((err) => setError(err.message));
@@ -80,7 +176,10 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
         .catch(() => {});
     };
     const timer = setInterval(refresh, 5000);
-    const onFocus = () => refresh();
+    const onFocus = () => {
+      setCart(loadCart(slug));
+      refresh();
+    };
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onFocus);
     return () => {
@@ -88,7 +187,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onFocus);
     };
-  }, []);
+  }, [slug, isAdd]);
 
   useEffect(() => {
     if (!lookGarments.length) return;
@@ -97,19 +196,12 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
     setGarmentId(next.id);
     setSizeLines(emptyLines(next.sizes));
     setSpecs(emptySpecs(next.fields));
-    if (!gender) {
-      setFitGender(next.genders.includes("shared") ? "shared" : "");
-    }
   }, [lookGarments, garmentId, gender]);
 
   const applyGarment = (next) => {
     setGarmentId(next.id);
     setSizeLines(emptyLines(next.sizes));
     setSpecs(emptySpecs(next.fields));
-    setSent(false);
-    if (!gender) {
-      setFitGender(next.genders.includes("shared") ? "shared" : "");
-    }
   };
 
   const onGarmentChange = (id) => {
@@ -117,114 +209,68 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
       setGarmentId("");
       setSizeLines(emptyLines([]));
       setSpecs(emptySpecs([]));
-      if (!gender) setFitGender("");
-      setSent(false);
       return;
     }
     const next = lookGarments.find((g) => g.id === id);
     if (next) applyGarment(next);
   };
 
-  const onFitChange = (value) => {
-    setFitGender(value);
-    if (!isBottoms) return;
-    const match = lookGarments.find(
-      (g) => g.category === "bottoms" && g.genders.includes(value)
-    );
-    if (match && match.id !== garment?.id) applyGarment(match);
-  };
-
-  const onSubmitPom = async (e) => {
-    e.preventDefault();
-    setError("");
-    if (!garment) {
-      setError("Choose a product.");
-      return;
-    }
-    if (needsGender && !fitGender) {
-      setError(isBottoms ? "Choose male or female." : "Choose men or women.");
-      return;
-    }
+  const currentLine = () => {
+    if (!garment) return { error: "Choose a product." };
     if (sizeLines.some((line) => !line.size || Number(line.qty) < 1)) {
-      setError("Enter a size and a quantity of at least 1.");
-      return;
+      return { error: "Enter a size and a quantity of at least 1." };
     }
     const sizes = linesToPayload(sizeLines);
     const quantity = totalFromLines(sizeLines);
-    if (quantity < 1) {
-      setError("Add a quantity for at least one size.");
-      return;
-    }
+    if (quantity < 1) return { error: "Add a quantity for at least one size." };
     for (const field of garment.fields || []) {
       if (!(specs[field.id] || "").trim()) {
-        setError(`Write the ${field.label.toLowerCase()}.`);
-        return;
+        return {
+          error: field.options
+            ? `Choose a ${field.label.toLowerCase()}.`
+            : `Write the ${field.label.toLowerCase()}.`,
+        };
       }
     }
-    if (!isPhone(phone)) {
-      setError("Enter a phone number.");
-      return;
-    }
-    const chosenGender =
-      gender ||
-      (garment.sex === "female"
-        ? "women"
-        : garment.sex === "male"
-          ? "men"
-          : garment.genders.includes("shared")
-            ? "shared"
-            : fitGender);
-    const product = matchCatalogProduct(products, garment, chosenGender);
+    const product = matchCatalogProduct(products, garment, fitForGarment(garment, gender));
     if (!product) {
-      setError("No catalog product matches this garment.");
-      return;
+      return {
+        error: products.length
+          ? "No catalog product matches this garment."
+          : "Your catalog is not set up yet. Contact the studio.",
+      };
     }
-    const sexLine = garment.sex
-      ? `Fit: ${garment.sex === "male" ? "Male" : "Female"} bottoms`
-      : null;
-    const sleeve = (specs.sleeve || "").trim();
-    const extraNotes = [sleeve ? `Sleeve: ${sleeve}` : "", sexLine, notes.trim()]
-      .filter(Boolean)
-      .join("\n");
-    setBusy(true);
-    try {
-      await createOrder({
+    return {
+      line: {
         product_id: product.id,
-        name: user.name,
-        brand: user.brand,
-        email: user.email,
-        phone: phone.trim(),
-        making: "Apparel",
-        quantity,
-        stage: "produce",
+        product_name: product.name,
         garment: garment.id,
+        name: garment.name,
+        quantity,
         sizes,
         color: (specs.color || "").trim() || undefined,
         height: (specs.height || "").trim() || undefined,
-        notes: extraNotes || undefined,
-      });
-      setSent(true);
-      setSizeLines(emptyLines(garment.sizes));
-      setSpecs(emptySpecs(garment.fields));
-      setNotes("");
-      await load();
-    } catch (err) {
-      setError(err.message || "Could not send order");
-    } finally {
-      setBusy(false);
-    }
+      },
+    };
   };
 
-  const onSubmitSimple = async (e) => {
+  const onAdd = (e) => {
     e.preventDefault();
     setError("");
-    const quantity = Number(simpleQty);
-    if (!productId || quantity < 1) {
-      setError("Choose a product and a quantity of at least 1.");
+    const { line, error: lineError } = currentLine();
+    if (lineError) {
+      setError(lineError);
       return;
     }
-    if (!simpleColor.trim()) {
-      setError("Write the type of color.");
+    persistCart(mergeCartItem(cart, line));
+    goToClientHome(slug);
+  };
+
+  const onSend = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!cart.length) {
+      setError("Add a product to this order first.");
       return;
     }
     if (!isPhone(phone)) {
@@ -234,21 +280,27 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
     setBusy(true);
     try {
       await createOrder({
-        product_id: Number(productId),
+        items: cart.map((item) => ({
+          product_id: item.product_id,
+          garment: item.garment,
+          quantity: item.quantity,
+          sizes: item.sizes,
+          color: item.color,
+          height: item.height,
+        })),
         name: user.name,
         brand: user.brand,
         email: user.email,
         phone: phone.trim(),
         making: "Apparel",
-        quantity,
-        stage: "produce",
-        color: simpleColor.trim(),
+        stage: "processing",
         notes: notes.trim() || undefined,
       });
+      clearCart(slug);
+      setCart([]);
       setSent(true);
-      setSimpleQty("");
-      setSimpleColor("");
       setNotes("");
+      setPhone("");
       await load();
     } catch (err) {
       setError(err.message || "Could not send order");
@@ -259,20 +311,29 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
 
   const sexLabel =
     garment?.sex === "male" ? "Male" : garment?.sex === "female" ? "Female" : null;
+  const grooveCopy = isAdd && isGroove ? grooveAddCopy(garment, categoryId) : null;
 
-  return (
-    <section className="order-panel" aria-label="Place an order">
-      <div className="order-panel__intro">
-        <p className="eyebrow">Production order</p>
-        <h2>Order from the {user.brand} catalog.</h2>
-        <p>
-          Pick the product, write the colour, and set quantities in XS–2XL. Bottoms need male or
-          female and a height of Short, Regular or Tall. Public visitors do not see this.
-        </p>
-      </div>
+  if (isAdd) {
+    return (
+      <section className="order-panel" aria-label="Add to this order">
+        <div className="order-panel__intro">
+          <p className="eyebrow">Production order</p>
+          <h2>{grooveCopy ? grooveCopy.title : `Add ${garment?.name || "this product"}.`}</h2>
+          {grooveCopy ? (
+            <ol className="order-panel__steps">
+              {grooveCopy.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          ) : (
+            <p>
+              Set sizes and fabric for this product, then add it. You will go back to the {user.brand}{" "}
+              page to pick the next one.
+            </p>
+          )}
+        </div>
 
-      {lookGarments.length ? (
-        <form className="order-panel__form" onSubmit={onSubmitPom}>
+        <form className="order-panel__form" onSubmit={onAdd}>
           {lookGarments.length > 1 ? (
             <div className="field">
               <label htmlFor="order-garment">Product</label>
@@ -294,40 +355,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
             <p className="order-panel__garment">{garment.name}</p>
           ) : null}
 
-          {isBottoms ? (
-            <p className="order-panel__sex">
-              {sexLabel ? `${sexLabel} bottoms` : "Choose male or female bottoms"}
-            </p>
-          ) : null}
-
-          {needsGender ? (
-            <div className="field">
-              <label htmlFor="order-fit">{isBottoms ? "Male or female" : "Men or women"}</label>
-              <select
-                id="order-fit"
-                value={isBottoms ? garment?.genders[0] || fitGender : fitGender}
-                onChange={(e) => onFitChange(e.target.value)}
-                required
-              >
-                <option value="">Select</option>
-                {isBottoms
-                  ? lookGarments
-                      .filter((g) => g.category === "bottoms")
-                      .map((g) => (
-                        <option key={g.id} value={g.genders[0]}>
-                          {g.sex === "male" ? "Male" : "Female"}
-                        </option>
-                      ))
-                  : (garment.genders || [])
-                      .filter((g) => g !== "shared")
-                      .map((g) => (
-                        <option key={g} value={g}>
-                          {g === "men" ? "Men" : "Women"}
-                        </option>
-                      ))}
-              </select>
-            </div>
-          ) : null}
+          {isBottoms && sexLabel ? <p className="order-panel__sex">{sexLabel} bottoms</p> : null}
 
           {garment ? (
             <div className="order-sizes">
@@ -424,7 +452,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
                   onChange={(e) => setSpecs((s) => ({ ...s, [field.id]: e.target.value }))}
                   required
                 >
-                  <option value="">Select height</option>
+                  <option value="">{field.placeholder || "Select"}</option>
                   {field.options.map((opt) => (
                     <option key={opt} value={opt}>
                       {opt}
@@ -442,6 +470,32 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
               )}
             </div>
           ))}
+
+          {error ? <p className="order-panel__error">{error}</p> : null}
+
+          <button className="btn" type="submit">
+            Add
+          </button>
+        </form>
+      </section>
+    );
+  }
+
+  return (
+    <section className="order-panel" aria-label="Finish this order">
+      <div className="order-panel__intro">
+        <p className="eyebrow">Production order</p>
+        <h2>{cart.length ? "Finish this order." : `Order from the ${user.brand} catalog.`}</h2>
+        <p>
+          {cart.length
+            ? "When every product is in, add a phone number and any notes, then send."
+            : "Open a product above to add it. Come back here when the order is complete."}
+        </p>
+      </div>
+
+      {cart.length ? (
+        <form className="order-panel__form" onSubmit={onSend}>
+          <CartList cart={cart} onRemove={(id) => persistCart(cart.filter((row) => row.id !== id))} />
 
           <div className="field">
             <label htmlFor="order-phone">Phone number</label>
@@ -468,111 +522,18 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
           {error ? <p className="order-panel__error">{error}</p> : null}
           {sent ? <p className="order-panel__ok">Order received.</p> : null}
 
-          <button className="btn" type="submit" disabled={busy}>
+          <button className="btn btn--invert" type="submit" disabled={busy}>
             {busy ? "Sending…" : "Send order"}
           </button>
         </form>
       ) : (
-        <form className="order-panel__form" onSubmit={onSubmitSimple}>
-          <div className="field">
-            <label htmlFor="order-product">Your catalog</label>
-            <select
-              id="order-product"
-              value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              required
-            >
-              <option value="">Select a {user.brand} product</option>
-              {catalog.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="order-sizes">
-            <p className="eyebrow">Quantity by size</p>
-            <div className="field">
-              <label htmlFor="order-qty">Total quantity</label>
-              <input
-                id="order-qty"
-                type="number"
-                min="1"
-                value={simpleQty}
-                onChange={(e) => setSimpleQty(e.target.value)}
-                placeholder="From 50"
-                required
-              />
-            </div>
-          </div>
-          <div className="field">
-            <label htmlFor="order-color-simple">Type of color</label>
-            <input
-              id="order-color-simple"
-              value={simpleColor}
-              onChange={(e) => setSimpleColor(e.target.value)}
-              placeholder="Write the colourway"
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="order-phone-simple">Phone number</label>
-            <input
-              id="order-phone-simple"
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              autoComplete="tel"
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="order-notes-simple">Notes</label>
-            <textarea
-              id="order-notes-simple"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Delivery window, anything else."
-            />
-          </div>
+        <>
           {error ? <p className="order-panel__error">{error}</p> : null}
           {sent ? <p className="order-panel__ok">Order received.</p> : null}
-          <button className="btn" type="submit" disabled={busy}>
-            {busy ? "Sending…" : "Send order"}
-          </button>
-        </form>
+        </>
       )}
 
-      {orders.length ? (
-        <div className="order-panel__history">
-          <p className="eyebrow">Your orders</p>
-          <ul>
-            {orders.map((o) => (
-              <li key={o.id}>
-                <span>{o.ref}</span>
-                <strong>
-                  {GARMENTS.find((g) => g.id === o.garment)?.name || o.product?.name}
-                </strong>
-                <em>
-                  {o.quantity} pcs
-                  {formatSizeRun(o.sizes) ? ` · ${formatSizeRun(o.sizes)}` : ""}
-                </em>
-                <b
-                  className={`order-status${
-                    o.stage === "distribute" || o.stage === "dispatch"
-                      ? " order-status--dispatch"
-                      : ""
-                  }`}
-                >
-                  {o.stage === "distribute" || o.stage === "dispatch"
-                    ? "Dispatch"
-                    : "Production"}
-                </b>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      <PastOrders orders={orders} />
     </section>
   );
 }

@@ -82,6 +82,23 @@
   text-transform: uppercase;
 }
 
+.project-hero--studio {
+  text-align: left;
+  max-width: 1280px;
+  padding-top: clamp(2.25rem, 6vw, 4rem);
+  padding-bottom: 0;
+}
+
+.project-hero--studio h1 {
+  font-size: clamp(2rem, 5.5vw, 3.5rem);
+  margin-top: 0.55rem;
+}
+
+.project-hero--studio .project-hero__hook {
+  max-width: 46ch;
+  color: var(--muted);
+}
+
 .project-hero__hook {
   margin-top: 1.15rem;
   font-size: clamp(1.05rem, 1.7vw, 1.3rem);

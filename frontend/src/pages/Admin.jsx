@@ -1,14 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchOrders, fetchInquiries, deleteInquiry, updateOrderStage, deleteOrder, downloadBlob } from "../api";
 import { GARMENTS, formatSizeRun } from "../measurements";
+import { itemName, orderItems } from "../orderItems";
+import { ORDER_STAGES, orderStage, orderStageName } from "../orderStages";
 import { lineSummary, quantityLabel } from "../textiles";
 import "./Portal.css";
 import "./Admin.css";
-
-const ADMIN_STAGES = [
-  { key: "produce", name: "Production" },
-  { key: "distribute", name: "Dispatch" },
-];
 
 const INQUIRY_STAGES = {
   idea: "I have an idea",
@@ -26,13 +23,24 @@ function garmentLabel(order) {
     const summary = lineSummary(order.fabric_line) || order.fabric || "Fabric";
     return mill ? `${mill} · ${summary}` : summary;
   }
+  const items = orderItems(order);
+  if (items.length > 1) {
+    return items.map(itemName).join(", ");
+  }
   const match = GARMENTS.find((g) => g.id === order.garment);
   return match?.name || order.product?.name || "—";
 }
 
-function adminStage(key) {
-  if (key === "distribute" || key === "dispatch") return "distribute";
-  return "produce";
+function stacked(items, render) {
+  if (!items.length) return "—";
+  if (items.length === 1) return render(items[0]);
+  return (
+    <ul className="admin-items">
+      {items.map((item, i) => (
+        <li key={`${item.garment || item.product_id}-${i}`}>{render(item)}</li>
+      ))}
+    </ul>
+  );
 }
 
 function formatDateTime(iso) {
@@ -80,32 +88,56 @@ function OrderRows({ orders, savingId, onStageChange, onDelete }) {
     );
   }
 
-  return orders.map((o) => (
-    <tr key={o.id}>
+  return orders.map((o) => {
+    const items = o.fabric_id ? [] : orderItems(o);
+    const multi = items.length > 1;
+    return (
+    <tr
+      key={o.id}
+      className={orderStage(o.stage) === "distribute" ? "admin-row--dispatch" : undefined}
+    >
       <td>{formatDateTime(o.created_at)}</td>
       <td>{o.ref}</td>
       <td>
-        <strong>{o.user?.name || o.contact_name}</strong>
-        <span>{o.user?.email || o.email}</span>
+        <strong>{o.contact_name || o.user?.name}</strong>
+        <span>{o.email || o.user?.email}</span>
       </td>
       <td>{o.phone || "—"}</td>
-      <td>{garmentLabel(o)}</td>
-      <td>{quantityLabel(o)}</td>
-      <td>{formatSizeRun(o.sizes) || "—"}</td>
-      <td>{o.color || "—"}</td>
+      <td>
+        {multi
+          ? stacked(items, (item) => itemName(item))
+          : garmentLabel(o)}
+      </td>
+      <td>
+        {multi
+          ? stacked(items, (item) => `${item.quantity || 0} pcs`)
+          : quantityLabel(o)}
+      </td>
+      <td>
+        {multi
+          ? stacked(items, (item) => formatSizeRun(item.sizes) || "—")
+          : formatSizeRun(o.sizes) || "—"}
+      </td>
+      <td>
+        {multi ? stacked(items, (item) => item.color || "—") : o.color || "—"}
+      </td>
       <td>{o.rib || "—"}</td>
-      <td>{o.height || "—"}</td>
-      <td>{o.fabric || "—"}</td>
+      <td>
+        {multi ? stacked(items, (item) => item.height || "—") : o.height || "—"}
+      </td>
+      <td>
+        {multi ? stacked(items, (item) => item.fabric || "—") : o.fabric || "—"}
+      </td>
       <td>{o.notes || "—"}</td>
       <td>
         <label className="admin-stage">
           <span className="sr-only">Stage for {o.ref}</span>
           <select
-            value={adminStage(o.stage)}
+            value={orderStage(o.stage)}
             disabled={savingId === o.id}
             onChange={(e) => onStageChange(o, e.target.value)}
           >
-            {ADMIN_STAGES.map((s) => (
+            {ORDER_STAGES.map((s) => (
               <option key={s.key} value={s.key}>
                 {s.name}
               </option>
@@ -124,7 +156,8 @@ function OrderRows({ orders, savingId, onStageChange, onDelete }) {
         </button>
       </td>
     </tr>
-  ));
+    );
+  });
 }
 
 export default function Admin({ user, onLogout }) {
@@ -155,7 +188,7 @@ export default function Admin({ user, onLogout }) {
   }, [companies]);
 
   const onStageChange = async (order, next) => {
-    const current = adminStage(order.stage);
+    const current = orderStage(order.stage);
     if (next === current) return;
     setError("");
     setNotice("");
@@ -163,8 +196,12 @@ export default function Admin({ user, onLogout }) {
     try {
       const data = await updateOrderStage(order.id, next);
       setOrders((list) => list.map((row) => (row.id === order.id ? data.order : row)));
-      const name = next === "distribute" ? "Dispatch" : "Production";
-      setNotice(`${order.ref} is now ${name}. The client sees this on their orders.`);
+      const mailed = data.mail?.sent || data.mail?.logged;
+      setNotice(
+        mailed
+          ? `${order.ref} is now ${orderStageName(next)}. A progress email was sent to the client.`
+          : `${order.ref} is now ${orderStageName(next)}. The client sees this on their orders.`
+      );
     } catch (err) {
       setError(err.message || "Could not update stage");
     } finally {
@@ -219,9 +256,9 @@ export default function Admin({ user, onLogout }) {
             <p className="eyebrow">Admin</p>
             <h1>All orders.</h1>
             <p className="page-head__lede">
-              Signed in as {user?.name}. Open a company to see its orders. Production or Dispatch
-              shows on the client’s page as soon as you change it. Delete a completed order to
-              download a completion PDF and remove it.
+              Signed in as {user?.name}. Open a company to see its orders. Processing, Production
+              or Dispatch shows on the client’s page as soon as you change it. Delete a completed
+              order to download a completion PDF and remove it.
             </p>
           </div>
           <button type="button" className="btn" onClick={onLogout}>

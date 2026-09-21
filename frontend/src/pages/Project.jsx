@@ -5,6 +5,7 @@ import { fetchFabrics } from "../api";
 import OrderPanel from "../components/OrderPanel";
 import FabricOrderPanel from "../components/FabricOrderPanel";
 import TextilesCatalog from "../components/TextilesCatalog";
+import GrooveCatalog from "../components/GrooveCatalog";
 import "./Project.css";
 
 function Category({ slug, gender, category, look, hideTitle }) {
@@ -139,6 +140,7 @@ function HeroBackground({ image, video }) {
 export default function Project({ slug, user }) {
   const project = getProject(slug);
   const isTextiles = slug === "cosine-textiles";
+  const isGroove = slug === "the-groove-hangout";
   const canOrder = canOrderTextiles(user);
   const [fabrics, setFabrics] = useState([]);
   const [fabricError, setFabricError] = useState("");
@@ -164,7 +166,7 @@ export default function Project({ slug, user }) {
   }
 
   const looks = project.looks || {};
-  const credit = project.credit || `Work done for ${project.client}`;
+  const credit = project.credit;
 
   return (
     <article className="project">
@@ -172,38 +174,40 @@ export default function Project({ slug, user }) {
         <HeroBackground image={project.hero} video={project.heroVideo} />
         <div className="project-hero__copy">
           <h1>{project.client}</h1>
-          {project.hook ? (
-            project.hookStyle === "edition" ? (
-              <p className="project-hero__hook project-hero__hook--edition">
-                <span className="project-hero__edition-rule" aria-hidden="true" />
-                <span className="project-hero__edition">
-                  <span className="project-hero__edition-num">7</span>
-                  <sup>th</sup>
-                  <span className="project-hero__edition-label">edition</span>
-                </span>
-                <span className="project-hero__edition-rule" aria-hidden="true" />
-              </p>
-            ) : project.hookStyle === "kicker" ? (
-              <p className="project-hero__hook project-hero__hook--kicker">
-                <span className="project-hero__edition-rule" aria-hidden="true" />
-                <span className="project-hero__kicker">{project.hook}</span>
-                <span className="project-hero__edition-rule" aria-hidden="true" />
-              </p>
-            ) : (
-              <p className="project-hero__hook">{project.hook}</p>
-            )
-          ) : null}
-          {project.gallery ? (
-            <p className="project-hero__credit">
-              <a href={project.gallery} target="_blank" rel="noreferrer">
-                {credit}
-              </a>
-            </p>
-          ) : (
-            <p className="project-hero__credit">{credit}</p>
-          )}
-        </div>
-      </header>
+            {project.hook ? (
+              project.hookStyle === "edition" ? (
+                <p className="project-hero__hook project-hero__hook--edition">
+                  <span className="project-hero__edition-rule" aria-hidden="true" />
+                  <span className="project-hero__edition">
+                    <span className="project-hero__edition-num">7</span>
+                    <sup>th</sup>
+                    <span className="project-hero__edition-label">edition</span>
+                  </span>
+                  <span className="project-hero__edition-rule" aria-hidden="true" />
+                </p>
+              ) : project.hookStyle === "kicker" ? (
+                <p className="project-hero__hook project-hero__hook--kicker">
+                  <span className="project-hero__edition-rule" aria-hidden="true" />
+                  <span className="project-hero__kicker">{project.hook}</span>
+                  <span className="project-hero__edition-rule" aria-hidden="true" />
+                </p>
+              ) : (
+                <p className="project-hero__hook">{project.hook}</p>
+              )
+            ) : null}
+            {credit ? (
+              project.gallery ? (
+                <p className="project-hero__credit">
+                  <a href={project.gallery} target="_blank" rel="noreferrer">
+                    {credit}
+                  </a>
+                </p>
+              ) : (
+                <p className="project-hero__credit">{credit}</p>
+              )
+            ) : null}
+          </div>
+        </header>
 
       {isTextiles ? (
         fabricError ? (
@@ -223,6 +227,8 @@ export default function Project({ slug, user }) {
             ) : null}
           </>
         )
+      ) : isGroove ? (
+        <GrooveCatalog />
       ) : (
         <>
           <section className="project-looks" aria-label="Looks">

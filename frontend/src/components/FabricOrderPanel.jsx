@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createOrder, fetchOrders } from "../api";
 import { isThread, lineSummary, quantityLabel } from "../textiles";
+import PastOrders from "./PastOrders";
 import "./OrderPanel.css";
 
 function isPhone(value) {
@@ -79,7 +80,7 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
         unit: "kg",
         color: color.trim(),
         rib: thread ? undefined : rib.trim(),
-        stage: "produce",
+        stage: "processing",
         notes: notes.trim() || undefined,
       });
       setSent(true);
@@ -202,29 +203,7 @@ export default function FabricOrderPanel({ user, fabrics, selected, onSelect }) 
         </button>
       </form>
 
-      {orders.length ? (
-        <div className="order-panel__history">
-          <p className="eyebrow">Your orders</p>
-          <ul>
-            {orders.map((o) => (
-              <li key={o.id}>
-                <span>{o.ref}</span>
-                <strong>{lineSummary(o.fabric_line) || o.fabric || "Fabric"}</strong>
-                <em>{quantityLabel(o)}</em>
-                <b
-                  className={`order-status${
-                    o.stage === "distribute" || o.stage === "dispatch"
-                      ? " order-status--dispatch"
-                      : ""
-                  }`}
-                >
-                  {o.stage === "distribute" || o.stage === "dispatch" ? "Dispatch" : "Production"}
-                </b>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      <PastOrders orders={orders} />
     </section>
   );
 }

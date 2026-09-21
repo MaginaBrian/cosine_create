@@ -1,0 +1,38 @@
+.product-slide {
+  position: relative;
+  display: block;
+  margin: 0;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: #111;
+  cursor: pointer;
+}
+
+.product-slide--still {
+  cursor: default;
+}
+
+.product-slide img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.35s ease;
+}
+
+.product-slide__back {
+  opacity: 0;
+}
+
+.product-slide:hover .product-slide__back,
+.product-slide:focus-visible .product-slide__back,
+.product-slide.is-flipped .product-slide__back {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-slide img {
+    transition: none;
+  }
+}

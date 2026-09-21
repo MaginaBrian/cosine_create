@@ -146,6 +146,38 @@
   font-size: 0.82rem;
 }
 
+.admin-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-items li + li {
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--line);
+}
+
+.admin-table tbody tr.admin-row--dispatch td {
+  background: #3ee07a;
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.admin-table tbody tr.admin-row--dispatch td strong,
+.admin-table tbody tr.admin-row--dispatch td span,
+.admin-table tbody tr.admin-row--dispatch .admin-items {
+  color: var(--white);
+}
+
+.admin-table tbody tr.admin-row--dispatch td:last-child {
+  background: #3ee07a;
+}
+
+.admin-row--dispatch .admin-items li + li {
+  border-top-color: rgba(255, 255, 255, 0.35);
+}
+
 .admin-stage select {
   width: 100%;
   min-width: 8.5rem;
@@ -155,10 +187,41 @@
   padding: 0.55rem 0.65rem;
 }
 
+.admin-row--dispatch .admin-stage select {
+  background: transparent;
+  color: var(--white);
+  border-color: var(--white);
+}
+
+.admin-stage select option[value="processing"],
+.admin-stage select option[value="produce"],
+.admin-stage select option[value="distribute"] {
+  color: var(--white);
+  background: var(--black);
+}
+
 .admin-stage select:focus {
   outline: none;
   background: var(--white);
   color: var(--black);
+  border-color: var(--white);
+}
+
+.admin-row--dispatch .admin-stage select:focus {
+  background: var(--white);
+  color: var(--black);
+  border-color: var(--white);
+}
+
+.admin-row--dispatch .admin-delete {
+  color: var(--white);
+  border-color: var(--white);
+}
+
+.admin-row--dispatch .admin-delete:hover,
+.admin-row--dispatch .admin-delete:focus-visible {
+  color: var(--black);
+  background: var(--white);
   border-color: var(--white);
 }
 
