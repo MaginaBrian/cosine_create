@@ -76,8 +76,9 @@ export const SHARED_CATEGORIES = [
 
 export const GROOVE_CATEGORIES = [
   { id: "t-shirts", label: "Oversized T-shirt" },
-  { id: "crop-top", label: "Crop top" },
+  { id: "crop-top", label: "Crop turn-up" },
   { id: "hats", label: "Hats" },
+  { id: "tags", label: "Tags" },
 ];
 
 function emptyCategory() {
@@ -198,31 +199,52 @@ mwotajiLooks.shared.sweatshirts = {
 
 const grooveLooks = emptyLooks();
 grooveLooks.shared["t-shirts"] = {
-  cover: "/work/groove-hangout/t-shirts/cover.jpg",
-  carousel: true,
+  cover: "/work/groove-hangout/t-shirts/cover.jpg?v=2",
   items: [
-    { front: "/work/groove-hangout/t-shirts/01.jpg" },
-    { front: "/work/groove-hangout/t-shirts/02.jpg" },
-    { front: "/work/groove-hangout/t-shirts/03.jpg" },
-    { front: "/work/groove-hangout/t-shirts/04.jpg" },
+    {
+      front: "/work/groove-hangout/t-shirts/01-front.jpg",
+      back: "/work/groove-hangout/t-shirts/01-back.jpg",
+    },
+    {
+      front: "/work/groove-hangout/t-shirts/02-front.jpg",
+      back: "/work/groove-hangout/t-shirts/02-back.jpg",
+    },
+    {
+      front: "/work/groove-hangout/t-shirts/03-front.jpg",
+      back: "/work/groove-hangout/t-shirts/03-back.jpg",
+    },
   ],
 };
 grooveLooks.shared["crop-top"] = {
-  cover: "/work/groove-hangout/crop-top/cover.jpg",
-  carousel: true,
+  cover: "/work/groove-hangout/crop-top/cover.jpg?v=2",
   items: [
-    { front: "/work/groove-hangout/crop-top/01.jpg" },
-    { front: "/work/groove-hangout/crop-top/02.jpg" },
-    { front: "/work/groove-hangout/crop-top/03.jpg" },
-    { front: "/work/groove-hangout/crop-top/04.jpg" },
+    {
+      front: "/work/groove-hangout/crop-top/01-front.jpg",
+      back: "/work/groove-hangout/crop-top/01-back.jpg",
+    },
+    {
+      front: "/work/groove-hangout/crop-top/02-front.jpg",
+      back: "/work/groove-hangout/crop-top/02-back.jpg",
+    },
+    {
+      front: "/work/groove-hangout/crop-top/03-front.jpg",
+      back: "/work/groove-hangout/crop-top/03-back.jpg",
+    },
   ],
 };
 grooveLooks.shared["hats"] = {
   cover: "/work/groove-hangout/hats/cover.jpg",
-  carousel: true,
   items: [
+    { front: "/work/groove-hangout/hats/cover.jpg" },
     { front: "/work/groove-hangout/hats/01.jpg" },
     { front: "/work/groove-hangout/hats/02.jpg" },
+  ],
+};
+grooveLooks.shared["tags"] = {
+  cover: "/work/groove-hangout/tags/cover.jpg",
+  items: [
+    { front: "/work/groove-hangout/tags/01.jpg" },
+    { front: "/work/groove-hangout/tags/02.jpg" },
   ],
 };
 

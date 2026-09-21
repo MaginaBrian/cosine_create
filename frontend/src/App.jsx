@@ -21,7 +21,8 @@ import { clearSession, fetchMe, getStoredUser, getToken, setSession } from "./ap
 
 function getPath() {
   const hash = window.location.hash.replace(/^#/, "") || "/";
-  return hash.startsWith("/") ? hash : `/${hash}`;
+  const withSlash = hash.startsWith("/") ? hash : `/${hash}`;
+  return withSlash.split("?")[0];
 }
 
 export default function App() {

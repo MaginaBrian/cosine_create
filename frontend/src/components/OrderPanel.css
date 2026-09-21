@@ -108,51 +108,92 @@
   color: var(--white);
 }
 
+.order-cart,
+.order-cart__empty {
+  width: 100%;
+  max-width: 42rem;
+}
+
+.order-cart {
+  border-top: 1px solid var(--line);
+  padding-top: 1.25rem;
+}
+
+.order-cart ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.85rem 0 0;
+}
+
+.order-cart li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-block: 0.85rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.order-cart strong {
+  display: block;
+  font-weight: 500;
+}
+
+.order-cart span {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.order-cart__empty {
+  color: var(--muted);
+}
+
+.order-panel__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.order-panel__lines li + li {
+  margin-top: 0.45rem;
+}
+
 .order-panel__history {
   margin-top: 3rem;
   border-top: 1px solid var(--line);
   padding-top: 1.5rem;
+  max-width: 42rem;
 }
 
-.order-panel__history ul {
-  margin-top: 1rem;
+.order-panel__history .field {
+  width: 100%;
 }
 
-.order-panel__history li {
+.order-panel__past {
+  margin-top: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.order-panel__past div {
   display: grid;
-  grid-template-columns: 6rem 1fr auto auto;
-  gap: 1rem;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 0.75rem;
   align-items: baseline;
-  padding: 0.95rem 0;
-  border-bottom: 1px solid var(--line);
 }
 
-.order-panel__history span,
-.order-panel__history em {
-  font-size: 0.78rem;
-  font-style: normal;
-  color: var(--muted);
-}
-
-.order-panel__history strong {
-  font-weight: 500;
-}
-
-.order-status {
+.order-panel__past dt {
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  justify-self: end;
+  color: var(--muted);
 }
 
-.order-status--dispatch {
-  color: var(--white);
-}
-
-@media (max-width: 640px) {
-  .order-panel__history li {
-    grid-template-columns: 1fr;
-    gap: 0.25rem;
-  }
+.order-panel__past dd {
+  margin: 0;
+  font-weight: 500;
 }

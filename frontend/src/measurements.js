@@ -1,6 +1,7 @@
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL"];
 const GROOVE_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
-const SIZE_RUN_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "XXL"];
+const GROOVE_HAT_SIZE = ["Standard"];
+const SIZE_RUN_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "XXL", "Standard"];
 
 export const MWOTAJI_TSHIRT_FABRICS = ["Black - T-shirt", "Off White - T-shirt"];
 export const MWOTAJI_FLEECE_FABRICS = ["Black - Fleece", "Teal - Fleece"];
@@ -20,6 +21,7 @@ export const GROOVE_HAT_OPTIONS = [
   "Bucket hat - Acid wash grey",
   "Baseball hat - Acid wash black",
 ];
+export const GROOVE_TAG_COLORS = ["Black", "White", "Green"];
 
 const GROOVE_TEE_COLOR_FIELD = {
   id: "color",
@@ -35,6 +37,14 @@ const GROOVE_HAT_FIELD = {
   placeholder: "Select hat",
   required: true,
   options: GROOVE_HAT_OPTIONS,
+};
+
+const GROOVE_TAG_FIELD = {
+  id: "color",
+  label: "Colour",
+  placeholder: "Select colour",
+  required: true,
+  options: GROOVE_TAG_COLORS,
 };
 
 const HEIGHT_FIELD = {
@@ -115,15 +125,7 @@ export const GARMENTS = [
     genders: ["men", "women"],
     brands: ["mwotaji"],
     sizes: SIZES,
-    fields: [
-      fabricField(MWOTAJI_TSHIRT_FABRICS),
-      {
-        id: "sleeve",
-        label: "Sleeve",
-        placeholder: "Short or long sleeve",
-        required: true,
-      },
-    ],
+    fields: [fabricField(MWOTAJI_TSHIRT_FABRICS)],
   },
   {
     id: "groove-oversized-t-shirt",
@@ -136,7 +138,7 @@ export const GARMENTS = [
   },
   {
     id: "groove-crop-top",
-    name: "Crop top",
+    name: "Crop turn-up",
     category: "crop-top",
     genders: ["shared"],
     brands: ["the-groove-hangout"],
@@ -149,8 +151,17 @@ export const GARMENTS = [
     category: "hats",
     genders: ["shared"],
     brands: ["the-groove-hangout"],
-    sizes: GROOVE_SIZES,
+    sizes: GROOVE_HAT_SIZE,
     fields: [GROOVE_HAT_FIELD],
+  },
+  {
+    id: "groove-tags",
+    name: "Tags",
+    category: "tags",
+    genders: ["shared"],
+    brands: ["the-groove-hangout"],
+    sizes: GROOVE_HAT_SIZE,
+    fields: [GROOVE_TAG_FIELD],
   },
 ];
 
@@ -158,12 +169,35 @@ export function garmentsForBrand(slug) {
   return GARMENTS.filter((g) => g.brands.includes(slug));
 }
 
+function matchesLookGender(garment, gender) {
+  if (!gender) return true;
+  if (garment.genders.includes(gender) || garment.genders.includes("shared")) return true;
+  if (gender === "men" && garment.sex === "male") return true;
+  if (gender === "women" && garment.sex === "female") return true;
+  return false;
+}
+
 export function garmentsForLook(slug, gender, categoryId) {
-  return garmentsForBrand(slug).filter((g) => {
-    if (g.category !== categoryId) return false;
-    if (!gender) return g.genders.includes("shared") || g.genders.length > 0;
-    return g.genders.includes(gender) || g.genders.includes("shared");
-  });
+  const list = garmentsForBrand(slug).filter((g) => g.category === categoryId);
+  if (!gender) return list;
+  return [...list].sort(
+    (a, b) => Number(matchesLookGender(b, gender)) - Number(matchesLookGender(a, gender))
+  );
+}
+
+export function fitForGarment(garment, pageGender) {
+  if (!garment) return pageGender || "";
+  if (garment.sex === "male") return "men";
+  if (garment.sex === "female") return "women";
+  if (garment.genders.includes("shared")) return "shared";
+  if (garment.genders.length === 1) return garment.genders[0];
+  if (pageGender && garment.genders.includes(pageGender)) return pageGender;
+  return garment.genders.find((g) => g !== "shared") || pageGender || "";
+}
+
+function catalogGenderSet(value) {
+  if (value === "shared" || value === "unisex") return new Set(["shared", "unisex"]);
+  return new Set([value]);
 }
 
 export function matchCatalogProduct(products, garment, gender) {
@@ -174,12 +208,13 @@ export function matchCatalogProduct(products, garment, gender) {
   if (bySlug) return bySlug;
   const wantedGender =
     gender || (garment.genders.includes("shared") ? "shared" : garment.genders[0]);
+  const wanted = catalogGenderSet(wantedGender);
   return (
     list.find(
       (p) =>
         p.sku_kind === "category" &&
         p.category === garment.category &&
-        p.gender === wantedGender
+        wanted.has(p.gender)
     ) || list.find((p) => p.sku_kind === "category" && p.category === garment.category)
   );
 }

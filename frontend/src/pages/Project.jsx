@@ -167,24 +167,13 @@ export default function Project({ slug, user }) {
 
   const looks = project.looks || {};
   const credit = project.credit;
-  const grooveOwner = isGroove && isBrandOwner(user, slug);
 
   return (
     <article className="project">
-      {grooveOwner ? (
-        <header className="project-hero project-hero--studio">
-          <p className="eyebrow">Studio order</p>
+      <header className={`project-hero${project.hero || project.heroVideo ? " project-hero--photo" : ""}`}>
+        <HeroBackground image={project.hero} video={project.heroVideo} />
+        <div className="project-hero__copy">
           <h1>{project.client}</h1>
-          <p className="project-hero__hook">
-            Signed in as {user.name}. Place a 7th edition order below, then open a product if you
-            want the looks.
-          </p>
-        </header>
-      ) : (
-        <header className={`project-hero${project.hero || project.heroVideo ? " project-hero--photo" : ""}`}>
-          <HeroBackground image={project.hero} video={project.heroVideo} />
-          <div className="project-hero__copy">
-            <h1>{project.client}</h1>
             {project.hook ? (
               project.hookStyle === "edition" ? (
                 <p className="project-hero__hook project-hero__hook--edition">
@@ -219,7 +208,6 @@ export default function Project({ slug, user }) {
             ) : null}
           </div>
         </header>
-      )}
 
       {isTextiles ? (
         fabricError ? (
@@ -239,11 +227,6 @@ export default function Project({ slug, user }) {
             ) : null}
           </>
         )
-      ) : grooveOwner ? (
-        <>
-          <OrderPanel user={user} slug={slug} />
-          <GrooveCatalog owner />
-        </>
       ) : isGroove ? (
         <GrooveCatalog />
       ) : (
@@ -269,7 +252,7 @@ export default function Project({ slug, user }) {
         </>
       )}
 
-      {!grooveOwner && isBrandOwner(user, slug) ? <OrderPanel user={user} slug={slug} /> : null}
+      {isBrandOwner(user, slug) ? <OrderPanel user={user} slug={slug} /> : null}
     </article>
   );
 }

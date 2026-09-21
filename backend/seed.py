@@ -1,7 +1,8 @@
 import json
+import os
 
 from fabrics_data import BUYER_CREDENTIAL, FABRIC_ROWS
-from models import Fabric, Order, Product, User, db
+from models import Fabric, Order, Product, User, UserEmail, db
 from security import hash_password
 
 SEED_CREDENTIALS = [
@@ -32,6 +33,13 @@ SEED_CREDENTIALS = [
     BUYER_CREDENTIAL,
 ]
 
+LOGIN_ALIASES = [
+    {
+        "email": "mwotajitribeofdreamers@gmail.com",
+        "primary": "mwotaji@cosinecreate.com",
+    },
+]
+
 MWOTAJI_CATEGORIES = [
     ("men-bottoms", "Men Bottoms", "bottoms", "men", "#/work/mwotaji/men/bottoms"),
     ("men-tops", "Men Tops", "tops", "men", "#/work/mwotaji/men/tops"),
@@ -52,9 +60,22 @@ MWOTAJI_LOOKS = [
 ]
 
 GROOVE_PRODUCTS = [
-    ("groove-oversized-t-shirt", "Oversized T-shirt", "tops", "unisex", None),
-    ("groove-crop-top", "Crop top", "tops", "unisex", None),
-    ("groove-hats", "Hats", "hats", "unisex", None),
+    (
+        "groove-oversized-t-shirt",
+        "Oversized T-shirt",
+        "t-shirts",
+        "shared",
+        "#/work/the-groove-hangout/t-shirts",
+    ),
+    (
+        "groove-crop-top",
+        "Crop turn-up",
+        "crop-top",
+        "shared",
+        "#/work/the-groove-hangout/crop-top",
+    ),
+    ("groove-hats", "Hats", "hats", "shared", "#/work/the-groove-hangout/hats"),
+    ("groove-tags", "Tags", "tags", "shared", "#/work/the-groove-hangout/tags"),
 ]
 
 
@@ -65,6 +86,7 @@ def _add_product(**kwargs):
 
 
 def _ensure_product(**kwargs):
+    """Create or update a catalog product. Never reads or writes orders."""
     product = Product.query.filter_by(
         client_slug=kwargs["client_slug"], slug=kwargs["slug"]
     ).first()
@@ -207,6 +229,15 @@ def ensure_client_users():
             user.brand = row["brand"]
             user.role = row["role"]
             user.client_slug = row["client_slug"]
+    db.session.flush()
+    for alias in LOGIN_ALIASES:
+        email = alias["email"].lower()
+        if User.query.filter_by(email=email).first() or UserEmail.query.filter_by(email=email).first():
+            continue
+        owner = User.query.filter_by(email=alias["primary"].lower()).first()
+        if owner is None:
+            continue
+        db.session.add(UserEmail(user_id=owner.id, email=email))
     db.session.commit()
 
 
@@ -235,6 +266,15 @@ def ensure_textiles():
 
 
 def seed_database():
+    """Wipe and reload demo data. Refuses if orders already exist unless FORCE_SEED=1."""
+    if Order.query.count() > 0 and os.environ.get("FORCE_SEED", "").lower() not in (
+        "1",
+        "true",
+        "yes",
+    ):
+        raise RuntimeError(
+            "Refusing to seed because orders already exist. Set FORCE_SEED=1 only if you mean to wipe them."
+        )
     db.drop_all()
     db.create_all()
 
@@ -252,6 +292,10 @@ def seed_database():
         users[row["email"]] = user
 
     db.session.flush()
+    for alias in LOGIN_ALIASES:
+        owner = users.get(alias["primary"])
+        if owner:
+            db.session.add(UserEmail(user_id=owner.id, email=alias["email"].lower()))
 
     mwotaji_products, groove_products = ensure_client_catalogs()
     load_fabrics()

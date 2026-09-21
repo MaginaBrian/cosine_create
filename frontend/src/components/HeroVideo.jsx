@@ -41,10 +41,7 @@ export default function HeroVideo() {
 
   return (
     <section className="reel" id="top" aria-label="Studio film">
-      <div className="reel__identity">
-        <h1>Cosine Create</h1>
-        <p>Apparel and textile manufacturing</p>
-      </div>
+      <h1 className="reel__heading">Cosine Create</h1>
 
       <video
         ref={videoRef}
