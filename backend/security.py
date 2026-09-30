@@ -19,12 +19,13 @@ def check_password(plain: str, hashed: str) -> bool:
         return False
 
 
-def make_token(user: User) -> str:
+def make_token(user: User, login_email=None) -> str:
     hours = current_app.config.get("JWT_EXPIRES_HOURS", 12)
     payload = {
         "sub": str(user.id),
         "role": user.role,
         "client_slug": user.client_slug,
+        "email": user.public_email(login_email),
         "iat": datetime.now(timezone.utc),
         "exp": datetime.now(timezone.utc) + timedelta(hours=hours),
     }
@@ -57,6 +58,7 @@ def current_user_from_token():
     user = db.session.get(User, user_id)
     if user is None:
         return None, ({"error": "Invalid token"}, 401)
+    user.session_email = user.public_email(payload.get("email"))
     return user, None
 
 

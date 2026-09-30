@@ -53,6 +53,7 @@ export default function Lookbook({ slug, gender, categoryId, user }) {
             key={item.front}
             front={item.front}
             back={item.back}
+            loading={i === 0 ? "eager" : "lazy"}
             alt={`${project.client} ${[genderLabel, category.label].filter(Boolean).join(" ")} ${i + 1}`}
           />
         ))}

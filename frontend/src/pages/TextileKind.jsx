@@ -86,7 +86,7 @@ export default function TextileKind({ kindSlug, user }) {
           aria-expanded={open}
           aria-label={`${label}. Tap to see composition ranges.`}
         >
-          <img src={cover} alt="" className="product-slide__front" />
+          <img src={cover} alt="" className="product-slide__front" decoding="async" />
           <div className="textile-kind__spec">
             <dl>
               {thread ? (
@@ -114,7 +114,7 @@ export default function TextileKind({ kindSlug, user }) {
               )}
             </dl>
             <figure className="textile-kind__wheel">
-              <img src="/textiles/color-wheel.jpg" alt="Full colour range" />
+              <img src="/textiles/color-wheel.jpg" alt="Full colour range" loading="lazy" decoding="async" />
               <figcaption>All colour range</figcaption>
             </figure>
           </div>

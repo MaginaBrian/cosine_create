@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import "./HeroVideo.css";
 
+const HERO_SRC = "/videos/hero.mp4?v=4";
+
 export default function HeroVideo() {
   const videoRef = useRef(null);
   const [muted, setMuted] = useState(false);
@@ -10,6 +12,7 @@ export default function HeroVideo() {
     if (!video) return undefined;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    video.src = HERO_SRC;
 
     const play = () => {
       if (reduce.matches) {
@@ -46,11 +49,11 @@ export default function HeroVideo() {
       <video
         ref={videoRef}
         className="reel__video"
-        src="/videos/hero.mp4?v=2"
+        poster="/videos/hero-poster.jpg"
         autoPlay
         loop
         playsInline
-        preload="auto"
+        preload="none"
         onClick={() => {
           if (muted) setSound(false);
         }}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Logo from "./Logo";
-import { clientHome } from "../clientHome";
+import { accountLabel, clientHome, isStaffRole, staffNavLabel } from "../clientHome";
+import { prefetchPath } from "../loadPage";
 import "./Navbar.css";
 
 const LINKS = [
@@ -67,6 +68,8 @@ export default function Navbar({ path, user, onLogout }) {
                 <a
                   href={l.href}
                   aria-current={isCurrent(path, l.match) ? "page" : undefined}
+                  onMouseEnter={() => prefetchPath(l.href)}
+                  onFocus={() => prefetchPath(l.href)}
                 >
                   {l.label}
                 </a>
@@ -97,12 +100,12 @@ export default function Navbar({ path, user, onLogout }) {
           </a>
           {user ? (
             <>
-              {path === "/admin" ? (
-                <span className="nav__account nav__account--quiet">Admin</span>
+              {path === "/admin" && isStaffRole(user) ? (
+                <span className="nav__account nav__account--quiet">{staffNavLabel(user)}</span>
               ) : (
                 <a
                   href={accountHref(user)}
-                  className="nav__account"
+                  className={`nav__account${user?.role === "client" ? " nav__account--email" : ""}`}
                   aria-current={
                     path === "/studio" ||
                     path === "/account" ||
@@ -112,7 +115,7 @@ export default function Navbar({ path, user, onLogout }) {
                       : undefined
                   }
                 >
-                  {user.brand || user.name}
+                  {accountLabel(user)}
                 </a>
               )}
               <button type="button" className="nav__out" onClick={onLogout}>
@@ -142,6 +145,8 @@ export default function Navbar({ path, user, onLogout }) {
                   href={l.href}
                   aria-current={isCurrent(path, l.match) ? "page" : undefined}
                   onClick={() => setOpen(false)}
+                  onMouseEnter={() => prefetchPath(l.href)}
+                  onFocus={() => prefetchPath(l.href)}
                 >
                   {l.label}
                 </a>
@@ -151,7 +156,7 @@ export default function Navbar({ path, user, onLogout }) {
               <>
                 <li>
                   <a href={accountHref(user)} onClick={() => setOpen(false)}>
-                    {user.brand || user.name}
+                    {accountLabel(user)}
                   </a>
                 </li>
                 <li>

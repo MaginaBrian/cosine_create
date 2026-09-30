@@ -102,6 +102,10 @@ p {
   top: 0.75rem;
 }
 
+.page-pending {
+  min-height: 70vh;
+}
+
 .container {
   width: 100%;
   max-width: var(--container);

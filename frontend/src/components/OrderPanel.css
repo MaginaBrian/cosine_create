@@ -171,6 +171,14 @@
   width: 100%;
 }
 
+.order-panel__date {
+  margin-bottom: 1.15rem;
+}
+
+.order-panel__date input[type="date"] {
+  color-scheme: dark;
+}
+
 .order-panel__past {
   margin-top: 1.35rem;
   display: flex;

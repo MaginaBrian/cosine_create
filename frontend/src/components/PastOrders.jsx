@@ -17,6 +17,16 @@ function formatOrderDate(iso) {
   }
 }
 
+function orderDateKey(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 function productName(order) {
   if (order.fabric_line || order.fabric_id) {
     return lineSummary(order.fabric_line) || order.fabric || "Fabric";
@@ -37,6 +47,7 @@ function optionLabel(order) {
 
 export default function PastOrders({ orders }) {
   const selectId = useId();
+  const dateId = useId();
   const past = useMemo(
     () =>
       [...(orders || [])].sort((a, b) => {
@@ -45,19 +56,28 @@ export default function PastOrders({ orders }) {
       }),
     [orders]
   );
+  const [onDate, setOnDate] = useState("");
   const [selectedId, setSelectedId] = useState("");
-  const selected = past.find((o) => String(o.id) === selectedId) || null;
+  const filtered = useMemo(
+    () =>
+      past.filter((o) => {
+        if (!onDate) return true;
+        return orderDateKey(o.created_at) === onDate;
+      }),
+    [past, onDate]
+  );
+  const selected = filtered.find((o) => String(o.id) === selectedId) || null;
   const selectedItems = selected ? orderItems(selected) : [];
 
   useEffect(() => {
-    if (!past.length) {
+    if (!filtered.length) {
       setSelectedId("");
       return;
     }
-    if (!selectedId || !past.some((o) => String(o.id) === selectedId)) {
-      setSelectedId(String(past[0].id));
+    if (!selectedId || !filtered.some((o) => String(o.id) === selectedId)) {
+      setSelectedId(String(filtered[0].id));
     }
-  }, [past, selectedId]);
+  }, [filtered, selectedId]);
 
   if (!past.length) {
     return (
@@ -74,18 +94,33 @@ export default function PastOrders({ orders }) {
 
   return (
     <div className="order-panel__history">
+      <div className="field order-panel__date">
+        <label htmlFor={dateId}>Search by date</label>
+        <input
+          id={dateId}
+          type="date"
+          value={onDate}
+          onChange={(e) => setOnDate(e.target.value)}
+        />
+      </div>
+
       <div className="field">
         <label htmlFor={selectId}>Past orders</label>
         <select
           id={selectId}
           value={selectedId}
           onChange={(e) => setSelectedId(e.target.value)}
+          disabled={!filtered.length}
         >
-          {past.map((o) => (
-            <option key={o.id} value={o.id}>
-              {optionLabel(o)}
-            </option>
-          ))}
+          {filtered.length ? (
+            filtered.map((o) => (
+              <option key={o.id} value={o.id}>
+                {optionLabel(o)}
+              </option>
+            ))
+          ) : (
+            <option value="">No orders on this date</option>
+          )}
         </select>
       </div>
 
@@ -163,8 +198,14 @@ export default function PastOrders({ orders }) {
           )}
           {selected.contact_name ? (
             <div>
-              <dt>Name</dt>
+              <dt>Customer name</dt>
               <dd>{selected.contact_name}</dd>
+            </div>
+          ) : null}
+          {selected.email ? (
+            <div>
+              <dt>Email</dt>
+              <dd>{selected.email}</dd>
             </div>
           ) : null}
           <div>

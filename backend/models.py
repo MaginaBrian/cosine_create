@@ -31,10 +31,17 @@ class User(db.Model):
                 emails.add(alias.email.lower())
         return sorted(emails)
 
-    def to_public(self):
+    def public_email(self, login_email=None):
+        shown = (login_email or getattr(self, "session_email", None) or self.email or "").strip().lower()
+        allowed = set(self.notify_emails())
+        if shown in allowed:
+            return shown
+        return self.email.lower()
+
+    def to_public(self, login_email=None):
         return {
             "id": self.id,
-            "email": self.email,
+            "email": self.public_email(login_email),
             "name": self.name,
             "role": self.role,
             "brand": self.brand,

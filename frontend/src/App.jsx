@@ -1,23 +1,39 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import People from "./pages/People";
-import Awards from "./pages/Awards";
-import Services from "./pages/Services";
-import Process from "./pages/Process";
-import Work from "./pages/Work";
-import Project from "./pages/Project";
-import Lookbook from "./pages/Lookbook";
-import TextileKind from "./pages/TextileKind";
-import Start from "./pages/Start";
-import Login from "./pages/Login";
-import Studio from "./pages/Studio";
-import Admin from "./pages/Admin";
 import Guard from "./pages/Guard";
+import Home from "./pages/Home";
+import {
+  loadAbout,
+  loadAdmin,
+  loadAwards,
+  loadLogin,
+  loadLookbook,
+  loadPeople,
+  loadProcess,
+  loadProject,
+  loadServices,
+  loadStart,
+  loadStudio,
+  loadTextileKind,
+  loadWork,
+} from "./loadPage";
 import { clearSession, fetchMe, getStoredUser, getToken, setSession } from "./api";
+
+const About = lazy(loadAbout);
+const People = lazy(loadPeople);
+const Awards = lazy(loadAwards);
+const Services = lazy(loadServices);
+const Process = lazy(loadProcess);
+const Work = lazy(loadWork);
+const Project = lazy(loadProject);
+const Lookbook = lazy(loadLookbook);
+const TextileKind = lazy(loadTextileKind);
+const Start = lazy(loadStart);
+const Login = lazy(loadLogin);
+const Studio = lazy(loadStudio);
+const Admin = lazy(loadAdmin);
 
 function getPath() {
   const hash = window.location.hash.replace(/^#/, "") || "/";
@@ -116,7 +132,7 @@ export default function App() {
         break;
       case "/admin":
         page = (
-          <Guard user={user} role="admin">
+          <Guard user={user} role={["admin", "produce", "dispatch"]}>
             <Admin user={user} onLogout={logout} />
           </Guard>
         );
@@ -132,7 +148,9 @@ export default function App() {
         Skip to content
       </a>
       <Navbar path={path} user={user} onLogout={logout} />
-      <main id="main">{page}</main>
+      <main id="main">
+        <Suspense fallback={<div className="page-pending" aria-busy="true" />}>{page}</Suspense>
+      </main>
       <Footer />
       <BackToTop />
     </>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchOrders, fetchInquiries, deleteInquiry, updateOrderStage, deleteOrder, downloadBlob } from "../api";
 import { GARMENTS, formatSizeRun } from "../measurements";
 import { itemName, orderItems } from "../orderItems";
-import { ORDER_STAGES, orderStage, orderStageName } from "../orderStages";
+import { canMoveOrderStage, orderStage, orderStageName, rowStageClass, stageChoices } from "../orderStages";
 import { lineSummary, quantityLabel } from "../textiles";
 import "./Portal.css";
 import "./Admin.css";
@@ -31,18 +31,6 @@ function garmentLabel(order) {
   return match?.name || order.product?.name || "—";
 }
 
-function stacked(items, render) {
-  if (!items.length) return "—";
-  if (items.length === 1) return render(items[0]);
-  return (
-    <ul className="admin-items">
-      {items.map((item, i) => (
-        <li key={`${item.garment || item.product_id}-${i}`}>{render(item)}</li>
-      ))}
-    </ul>
-  );
-}
-
 function formatDateTime(iso) {
   if (!iso) return "—";
   try {
@@ -57,6 +45,21 @@ function formatDateTime(iso) {
   } catch {
     return iso;
   }
+}
+
+function orderDateKey(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function ordersOnDate(list, date) {
+  if (!date) return list;
+  return list.filter((o) => orderDateKey(o.created_at) === date);
 }
 
 function companyKey(order) {
@@ -79,88 +82,132 @@ function groupByCompany(orders) {
   return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
 
-function OrderRows({ orders, savingId, onStageChange, onDelete }) {
+function StageCell({ order, savingId, onStageChange, role }) {
+  const current = orderStage(order.stage);
+  const choices = stageChoices(role, current);
+  const locked = choices.length < 2;
+  return (
+    <td className="admin-item-cell">
+      <label className="admin-stage">
+        <span className="sr-only">Stage for {order.ref}</span>
+        <select
+          value={current}
+          disabled={locked || savingId === order.id}
+          onChange={(e) => onStageChange(order, e.target.value)}
+        >
+          {choices.map((s) => (
+            <option key={s.key} value={s.key}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+      </label>
+    </td>
+  );
+}
+
+function DeleteCell({ order, savingId, onDelete, show }) {
+  return (
+    <td className="admin-item-cell">
+      {show ? (
+        <button
+          type="button"
+          className="admin-delete"
+          disabled={savingId === order.id}
+          onClick={() => onDelete(order)}
+        >
+          Delete
+        </button>
+      ) : null}
+    </td>
+  );
+}
+
+function OrderMetaCells({ order, rowSpan }) {
+  return (
+    <>
+      <td rowSpan={rowSpan}>{formatDateTime(order.created_at)}</td>
+      <td rowSpan={rowSpan}>{order.ref}</td>
+      <td rowSpan={rowSpan}>
+        <strong>{order.contact_name || order.user?.name}</strong>
+        <span>{order.email || order.user?.email}</span>
+      </td>
+      <td rowSpan={rowSpan}>{order.phone || "—"}</td>
+    </>
+  );
+}
+
+function itemLineCells(item, { rib, notes }) {
+  return (
+    <>
+      <td className="admin-item-cell">{itemName(item)}</td>
+      <td className="admin-item-cell">{`${item.quantity || 0} pcs`}</td>
+      <td className="admin-item-cell">{formatSizeRun(item.sizes) || "—"}</td>
+      <td className="admin-item-cell">{item.color || "—"}</td>
+      <td className="admin-item-cell">{rib || "—"}</td>
+      <td className="admin-item-cell">{item.height || "—"}</td>
+      <td className="admin-item-cell">{item.fabric || "—"}</td>
+      <td className="admin-item-cell">{notes}</td>
+    </>
+  );
+}
+
+function OrderRows({ orders, emptyLabel = "No orders yet.", savingId, onStageChange, onDelete, role, canDelete }) {
+  const colSpan = canDelete ? 14 : 13;
   if (!orders.length) {
     return (
       <tr>
-        <td colSpan={14}>No orders yet.</td>
+        <td colSpan={colSpan}>{emptyLabel}</td>
       </tr>
     );
   }
 
-  return orders.map((o) => {
+  return orders.flatMap((o) => {
     const items = o.fabric_id ? [] : orderItems(o);
-    const multi = items.length > 1;
-    return (
-    <tr
-      key={o.id}
-      className={orderStage(o.stage) === "distribute" ? "admin-row--dispatch" : undefined}
-    >
-      <td>{formatDateTime(o.created_at)}</td>
-      <td>{o.ref}</td>
-      <td>
-        <strong>{o.contact_name || o.user?.name}</strong>
-        <span>{o.email || o.user?.email}</span>
-      </td>
-      <td>{o.phone || "—"}</td>
-      <td>
-        {multi
-          ? stacked(items, (item) => itemName(item))
-          : garmentLabel(o)}
-      </td>
-      <td>
-        {multi
-          ? stacked(items, (item) => `${item.quantity || 0} pcs`)
-          : quantityLabel(o)}
-      </td>
-      <td>
-        {multi
-          ? stacked(items, (item) => formatSizeRun(item.sizes) || "—")
-          : formatSizeRun(o.sizes) || "—"}
-      </td>
-      <td>
-        {multi ? stacked(items, (item) => item.color || "—") : o.color || "—"}
-      </td>
-      <td>{o.rib || "—"}</td>
-      <td>
-        {multi ? stacked(items, (item) => item.height || "—") : o.height || "—"}
-      </td>
-      <td>
-        {multi ? stacked(items, (item) => item.fabric || "—") : o.fabric || "—"}
-      </td>
-      <td>{o.notes || "—"}</td>
-      <td>
-        <label className="admin-stage">
-          <span className="sr-only">Stage for {o.ref}</span>
-          <select
-            value={orderStage(o.stage)}
-            disabled={savingId === o.id}
-            onChange={(e) => onStageChange(o, e.target.value)}
+    const stageClass = rowStageClass(o.stage);
+
+    if (items.length > 1) {
+      return items.map((item, i) => {
+        const last = i === items.length - 1;
+        return (
+          <tr
+            key={`${o.id}-${i}`}
+            className={`admin-row-group${last ? " admin-row-group--last" : ""}${stageClass ? ` ${stageClass}` : ""}`}
           >
-            {ORDER_STAGES.map((s) => (
-              <option key={s.key} value={s.key}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </td>
-      <td>
-        <button
-          type="button"
-          className="admin-delete"
-          disabled={savingId === o.id}
-          onClick={() => onDelete(o)}
-        >
-          Delete
-        </button>
-      </td>
-    </tr>
-    );
+            {i === 0 ? <OrderMetaCells order={o} rowSpan={items.length} /> : null}
+            {itemLineCells(item, {
+              rib: o.rib,
+              notes: i === 0 ? o.notes || "—" : "",
+            })}
+            <StageCell order={o} savingId={savingId} onStageChange={onStageChange} role={role} />
+            {canDelete ? (
+              <DeleteCell order={o} savingId={savingId} onDelete={onDelete} show={i === 0} />
+            ) : null}
+          </tr>
+        );
+      });
+    }
+
+    return [
+      <tr key={o.id} className={stageClass || undefined}>
+        <OrderMetaCells order={o} />
+        <td>{garmentLabel(o)}</td>
+        <td>{quantityLabel(o)}</td>
+        <td>{formatSizeRun(o.sizes) || "—"}</td>
+        <td>{o.color || "—"}</td>
+        <td>{o.rib || "—"}</td>
+        <td>{o.height || "—"}</td>
+        <td>{o.fabric || "—"}</td>
+        <td>{o.notes || "—"}</td>
+        <StageCell order={o} savingId={savingId} onStageChange={onStageChange} role={role} />
+        {canDelete ? <DeleteCell order={o} savingId={savingId} onDelete={onDelete} show /> : null}
+      </tr>,
+    ];
   });
 }
 
 export default function Admin({ user, onLogout }) {
+  const isAdmin = user?.role === "admin";
   const [orders, setOrders] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [error, setError] = useState("");
@@ -168,16 +215,18 @@ export default function Admin({ user, onLogout }) {
   const [savingId, setSavingId] = useState(null);
   const [savingInquiryId, setSavingInquiryId] = useState(null);
   const [openKeys, setOpenKeys] = useState(() => new Set());
+  const [dateByCompany, setDateByCompany] = useState({});
   const primedCompanies = useRef(false);
 
   useEffect(() => {
     fetchOrders()
       .then((data) => setOrders(data.orders || []))
       .catch((err) => setError(err.message));
+    if (!isAdmin) return;
     fetchInquiries()
       .then((data) => setInquiries(data.inquiries || []))
       .catch((err) => setError(err.message));
-  }, []);
+  }, [isAdmin]);
 
   const companies = useMemo(() => groupByCompany(orders), [orders]);
 
@@ -190,6 +239,7 @@ export default function Admin({ user, onLogout }) {
   const onStageChange = async (order, next) => {
     const current = orderStage(order.stage);
     if (next === current) return;
+    if (!canMoveOrderStage(user?.role, current, next)) return;
     setError("");
     setNotice("");
     setSavingId(order.id);
@@ -253,12 +303,17 @@ export default function Admin({ user, onLogout }) {
       <header className="page-head">
         <div className="container portal-head">
           <div>
-            <p className="eyebrow">Admin</p>
+            <p className="eyebrow">{user?.role === "produce" ? "Production" : user?.role === "dispatch" ? "Dispatch" : "Admin"}</p>
             <h1>All orders.</h1>
             <p className="page-head__lede">
-              Signed in as {user?.name}. Open a company to see its orders. Processing, Production
-              or Dispatch shows on the client’s page as soon as you change it. Delete a completed
-              order to download a completion PDF and remove it.
+              {user?.role === "produce"
+                ? `Signed in as ${user?.name}. You can move an order from Processing to Production. Production rows turn blue.`
+                : user?.role === "dispatch"
+                  ? `Signed in as ${user?.name}. You can move an order from Production to Dispatch. Dispatch rows turn green.`
+                  : `Signed in as ${user?.name}. Open a company to see its orders, and search a date to
+              show only that day’s orders for that client. Processing stays black and white,
+              Production turns the row blue, and Dispatch turns it green. Delete a completed order
+              to download a completion PDF and remove it.`}
             </p>
           </div>
           <button type="button" className="btn" onClick={onLogout}>
@@ -275,7 +330,11 @@ export default function Admin({ user, onLogout }) {
             <p className="admin-empty">No orders yet.</p>
           ) : (
             <div className="admin-companies">
-              {companies.map((company) => (
+              {companies.map((company) => {
+                const onDate = dateByCompany[company.key] || "";
+                const visible = ordersOnDate(company.orders, onDate);
+                const dateId = `admin-date-${company.key}`;
+                return (
                 <details
                   key={company.key}
                   className="admin-company"
@@ -294,10 +353,26 @@ export default function Admin({ user, onLogout }) {
                   <summary>
                     <span className="admin-company__name">{company.label}</span>
                     <span className="admin-company__count">
-                      {company.orders.length} {company.orders.length === 1 ? "order" : "orders"}
+                      {onDate
+                        ? `${visible.length} of ${company.orders.length} ${company.orders.length === 1 ? "order" : "orders"}`
+                        : `${company.orders.length} ${company.orders.length === 1 ? "order" : "orders"}`}
                     </span>
                     <span className="admin-company__mark" aria-hidden="true" />
                   </summary>
+                  <div className="field admin-company__date">
+                    <label htmlFor={dateId}>Search by date</label>
+                    <input
+                      id={dateId}
+                      type="date"
+                      value={onDate}
+                      onChange={(e) =>
+                        setDateByCompany((dates) => ({
+                          ...dates,
+                          [company.key]: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
                   <div className="admin-table-wrap">
                     <table className="admin-table">
                       <thead>
@@ -315,24 +390,29 @@ export default function Admin({ user, onLogout }) {
                           <th>Apparel fabric</th>
                           <th>Notes</th>
                           <th>Stage</th>
-                          <th>Delete</th>
+                          {isAdmin ? <th>Delete</th> : null}
                         </tr>
                       </thead>
                       <tbody>
                         <OrderRows
-                          orders={company.orders}
+                          orders={visible}
+                          emptyLabel={onDate ? "No orders on this date." : "No orders yet."}
                           savingId={savingId}
                           onStageChange={onStageChange}
                           onDelete={onDelete}
+                          role={user?.role}
+                          canDelete={isAdmin}
                         />
                       </tbody>
                     </table>
                   </div>
                 </details>
-              ))}
+                );
+              })}
             </div>
           )}
 
+          {isAdmin ? (
           <div className="admin-leads">
             <p className="eyebrow">Start a project</p>
             <h2>Potential customers.</h2>
@@ -388,6 +468,7 @@ export default function Admin({ user, onLogout }) {
               </div>
             )}
           </div>
+          ) : null}
         </div>
       </section>
     </>

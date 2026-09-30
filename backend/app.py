@@ -14,6 +14,7 @@ from models import Fabric, Inquiry, Order, Product, User, db, find_user_by_email
 from security import check_password, make_token, require_auth, require_role
 
 ADMIN_MOVE_STAGES = ("processing", "produce", "distribute")
+STAFF_ROLES = ("admin", "produce", "dispatch")
 STAGE_ALIASES = {
     "process": "processing",
     "processing": "processing",
@@ -74,6 +75,26 @@ FABRIC_UNITS = {"m", "kg"}
 def canonical_stage(value):
     key = (value or "").strip()
     return STAGE_ALIASES.get(key, key)
+
+
+def allowed_stage_move(role, previous, stage):
+    if previous == stage:
+        return True
+    if role == "admin" and stage in ADMIN_MOVE_STAGES:
+        return True
+    if role == "produce":
+        return previous == "processing" and stage == "produce"
+    if role == "dispatch":
+        return previous == "produce" and stage == "distribute"
+    return False
+
+
+def stage_move_error(role):
+    if role == "produce":
+        return "You can only move orders from Processing to Production"
+    if role == "dispatch":
+        return "You can only move orders from Production to Dispatch"
+    return "You cannot change this stage"
 
 
 def parse_phone(value):
@@ -161,7 +182,13 @@ def create_app():
     with app.app_context():
         db.create_all()
         ensure_schema()
-        from seed import ensure_client_catalogs, ensure_client_users, ensure_textiles, seed_database
+        from seed import (
+            ensure_client_catalogs,
+            ensure_client_users,
+            ensure_staff_users,
+            ensure_textiles,
+            seed_database,
+        )
 
         seed_empty = os.environ.get("SEED_IF_EMPTY", "").lower() in ("1", "true", "yes")
         if seed_empty and User.query.count() == 0 and Order.query.count() == 0:
@@ -169,6 +196,7 @@ def create_app():
         else:
             ensure_textiles()
             ensure_client_users()
+            ensure_staff_users()
             ensure_client_catalogs()
 
     register_routes(app)
@@ -192,10 +220,11 @@ def register_cli(app):
     @app.cli.command("ensure-catalogs")
     def ensure_catalogs_command():
         """Add missing client catalogs without wiping orders."""
-        from seed import ensure_client_catalogs, ensure_client_users, ensure_textiles
+        from seed import ensure_client_catalogs, ensure_client_users, ensure_staff_users, ensure_textiles
 
         ensure_textiles()
         ensure_client_users()
+        ensure_staff_users()
         mwotaji, groove = ensure_client_catalogs()
         print(f"MWOTAJI category products: {len(mwotaji)}")
         print(f"Groove products: {len(groove)}")
@@ -332,7 +361,7 @@ def create_garment_order(user, body):
         return jsonify({"error": "A phone number is required"}), 400
 
     contact_name = (body.get("name") or user.name).strip()
-    email = parse_email(body.get("email") or user.email)
+    email = parse_email(body.get("email") or getattr(user, "session_email", None) or user.email)
     brand = (body.get("brand") or user.brand or "").strip()
     client_slug = user.client_slug
     if product and product.client_slug == GROOVE_SLUG:
@@ -432,7 +461,7 @@ def create_fabric_order(user, body):
         client_slug=user.client_slug or "cosine-textiles",
         contact_name=(body.get("name") or user.name).strip(),
         brand=(body.get("brand") or user.brand or "Cosine Textiles").strip(),
-        email=(body.get("email") or user.email).strip().lower(),
+        email=(body.get("email") or getattr(user, "session_email", None) or user.email).strip().lower(),
         phone=phone,
         making="Textiles",
         quantity=quantity,
@@ -473,7 +502,9 @@ def register_routes(app):
         if user is None or not check_password(password, user.password_hash):
             return jsonify({"error": "Invalid email or password"}), 401
 
-        return jsonify({"token": make_token(user), "user": user.to_public()})
+        return jsonify(
+            {"token": make_token(user, login_email=email), "user": user.to_public(login_email=email)}
+        )
 
     @app.get("/api/me")
     @require_auth
@@ -505,11 +536,11 @@ def register_routes(app):
 
     @app.get("/api/orders")
     @require_auth
-    @require_role("client", "admin", "buyer")
+    @require_role("client", "admin", "buyer", "produce", "dispatch")
     def list_orders():
         user = g.current_user
         query = Order.query.order_by(Order.created_at.desc())
-        include_user = user.role == "admin"
+        include_user = user.role in STAFF_ROLES
         if user.role in ("client", "buyer"):
             if user.client_slug:
                 query = query.filter_by(client_slug=user.client_slug)
@@ -531,7 +562,7 @@ def register_routes(app):
 
     @app.patch("/api/orders/<int:order_id>/stage")
     @require_auth
-    @require_role("admin")
+    @require_role("admin", "produce", "dispatch")
     def update_order_stage(order_id):
         order = db.session.get(Order, order_id)
         if order is None:
@@ -543,6 +574,9 @@ def register_routes(app):
             return jsonify({"error": "Stage must be processing, production, or dispatch"}), 400
 
         previous = canonical_stage(order.stage)
+        if not allowed_stage_move(g.current_user.role, previous, stage):
+            return jsonify({"error": stage_move_error(g.current_user.role)}), 403
+
         order.stage = stage
         db.session.commit()
         mail = None

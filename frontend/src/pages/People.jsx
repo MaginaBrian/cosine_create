@@ -55,7 +55,13 @@ export default function People() {
       <div className="people__roles">
         {ROLES.map(({ id, title, image, alt, body }) => (
           <section key={id} className="people__role">
-            <img className="people__bg" src={image} alt={alt} />
+            <img
+              className="people__bg"
+              src={image}
+              alt={alt}
+              loading={id === "head" ? "eager" : "lazy"}
+              decoding="async"
+            />
             <div className="people__copy">
               <h2>{title}</h2>
               {(Array.isArray(body) ? body : [body]).map((para) => (

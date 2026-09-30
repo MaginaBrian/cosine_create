@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { groupFabrics } from "../textiles";
+import { prefetchPath } from "../loadPage";
 import "./TextilesCatalog.css";
 
 export default function TextilesCatalog({ fabrics }) {
@@ -24,8 +25,10 @@ export default function TextilesCatalog({ fabrics }) {
                 href={`#/work/cosine-textiles/${group.slug}`}
                 className="textiles-type"
                 aria-label={group.label}
+                onMouseEnter={() => prefetchPath(`#/work/cosine-textiles/${group.slug}`)}
+                onFocus={() => prefetchPath(`#/work/cosine-textiles/${group.slug}`)}
               >
-                <img src={group.cover} alt="" />
+                <img src={group.cover} alt="" loading="lazy" decoding="async" />
                 <span>{group.label}</span>
               </a>
             </li>

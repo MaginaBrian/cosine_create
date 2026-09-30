@@ -5,6 +5,25 @@ from fabrics_data import BUYER_CREDENTIAL, FABRIC_ROWS
 from models import Fabric, Order, Product, User, UserEmail, db
 from security import hash_password
 
+STAFF_CREDENTIALS = [
+    {
+        "email": "production@cosinecreate.com",
+        "password": "Produce123!",
+        "name": "Production",
+        "role": "produce",
+        "brand": "Cosine Create",
+        "client_slug": None,
+    },
+    {
+        "email": "dispatch@cosinecreate.com",
+        "password": "Dispatch123!",
+        "name": "Dispatch",
+        "role": "dispatch",
+        "brand": "Cosine Create",
+        "client_slug": None,
+    },
+]
+
 SEED_CREDENTIALS = [
     {
         "email": "admin@cosinecreate.com",
@@ -14,6 +33,7 @@ SEED_CREDENTIALS = [
         "brand": "Cosine Create",
         "client_slug": None,
     },
+    *STAFF_CREDENTIALS,
     {
         "email": "mwotaji@cosinecreate.com",
         "password": "Mwotaji123!",
@@ -238,6 +258,41 @@ def ensure_client_users():
         if owner is None:
             continue
         db.session.add(UserEmail(user_id=owner.id, email=email))
+    db.session.commit()
+
+
+STAFF_EMAIL_RENAMES = {
+    "production@cosinecreate.com": "produce@cosinecreate.com",
+}
+
+
+def ensure_staff_users():
+    """Create production/dispatch staff without overwriting existing passwords."""
+    for row in STAFF_CREDENTIALS:
+        email = row["email"].lower()
+        user = User.query.filter_by(email=email).first()
+        if user is None:
+            previous = STAFF_EMAIL_RENAMES.get(email)
+            if previous:
+                user = User.query.filter_by(email=previous).first()
+                if user is not None:
+                    user.email = email
+        if user is None:
+            db.session.add(
+                User(
+                    email=email,
+                    password_hash=hash_password(row["password"]),
+                    name=row["name"],
+                    role=row["role"],
+                    brand=row["brand"],
+                    client_slug=row["client_slug"],
+                )
+            )
+        else:
+            user.name = row["name"]
+            user.role = row["role"]
+            user.brand = row["brand"]
+            user.client_slug = row["client_slug"]
     db.session.commit()
 
 

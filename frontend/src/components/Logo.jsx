@@ -4,10 +4,10 @@ export default function Logo() {
   return (
     <img
       className="brand-lockup"
-      src="/lockup.png?v=3"
+      src="/lockup.png?v=4"
       alt="Cosine Create"
-      width="2874"
-      height="339"
+      width="1400"
+      height="165"
     />
   );
 }

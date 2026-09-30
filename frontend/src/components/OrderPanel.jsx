@@ -125,6 +125,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
   const [specs, setSpecs] = useState(() => emptySpecs(lookGarments[0]?.fields));
   const [notes, setNotes] = useState("");
   const [phone, setPhone] = useState("");
+  const [customerName, setCustomerName] = useState("");
   const [cart, setCart] = useState(() => loadCart(slug));
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -273,6 +274,10 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
       setError("Add a product to this order first.");
       return;
     }
+    if (slug === "mwotaji" && !customerName.trim()) {
+      setError("Enter the customer name.");
+      return;
+    }
     if (!isPhone(phone)) {
       setError("Enter a phone number.");
       return;
@@ -288,7 +293,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
           color: item.color,
           height: item.height,
         })),
-        name: user.name,
+        name: slug === "mwotaji" ? customerName.trim() : user.name,
         brand: user.brand,
         email: user.email,
         phone: phone.trim(),
@@ -301,6 +306,7 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
       setSent(true);
       setNotes("");
       setPhone("");
+      setCustomerName("");
       await load();
     } catch (err) {
       setError(err.message || "Could not send order");
@@ -488,7 +494,9 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
         <h2>{cart.length ? "Finish this order." : `Order from the ${user.brand} catalog.`}</h2>
         <p>
           {cart.length
-            ? "When every product is in, add a phone number and any notes, then send."
+            ? slug === "mwotaji"
+              ? "When every product is in, add the customer name, a phone number and any notes, then send."
+              : "When every product is in, add a phone number and any notes, then send."
             : "Open a product above to add it. Come back here when the order is complete."}
         </p>
       </div>
@@ -496,6 +504,26 @@ export default function OrderPanel({ user, slug, gender = null, categoryId = nul
       {cart.length ? (
         <form className="order-panel__form" onSubmit={onSend}>
           <CartList cart={cart} onRemove={(id) => persistCart(cart.filter((row) => row.id !== id))} />
+
+          {slug === "mwotaji" ? (
+            <>
+            <div className="field">
+              <label htmlFor="order-customer-name">Customer name</label>
+              <input
+                id="order-customer-name"
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                autoComplete="name"
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="order-email">Email</label>
+              <input id="order-email" type="email" value={user.email || ""} readOnly />
+            </div>
+            </>
+          ) : null}
 
           <div className="field">
             <label htmlFor="order-phone">Phone number</label>

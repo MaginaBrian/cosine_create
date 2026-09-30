@@ -90,6 +90,15 @@
   border-top: 1px solid var(--line-strong);
 }
 
+.admin-company__date {
+  max-width: 18rem;
+  padding: 1rem 1.15rem 0;
+}
+
+.admin-company__date input[type="date"] {
+  color-scheme: dark;
+}
+
 .admin-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--line-strong);
@@ -146,36 +155,42 @@
   font-size: 0.82rem;
 }
 
-.admin-items {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.admin-row-group:not(.admin-row-group--last) td:not([rowspan]) {
+  border-bottom: 1px solid var(--line-strong);
 }
 
-.admin-items li + li {
-  margin-top: 0.55rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid var(--line);
-}
-
+.admin-table tbody tr.admin-row--produce td,
 .admin-table tbody tr.admin-row--dispatch td {
-  background: #3ee07a;
   color: var(--white);
   border-color: rgba(255, 255, 255, 0.35);
 }
 
+.admin-table tbody tr.admin-row--produce td {
+  background: #3d9eff;
+}
+
+.admin-table tbody tr.admin-row--dispatch td {
+  background: #3ee07a;
+}
+
+.admin-table tbody tr.admin-row--produce td strong,
+.admin-table tbody tr.admin-row--produce td span,
 .admin-table tbody tr.admin-row--dispatch td strong,
-.admin-table tbody tr.admin-row--dispatch td span,
-.admin-table tbody tr.admin-row--dispatch .admin-items {
+.admin-table tbody tr.admin-row--dispatch td span {
   color: var(--white);
+}
+
+.admin-row--produce:not(.admin-row-group--last) td:not([rowspan]),
+.admin-row--dispatch:not(.admin-row-group--last) td:not([rowspan]) {
+  border-bottom-color: rgba(255, 255, 255, 0.45);
+}
+
+.admin-table tbody tr.admin-row--produce td:last-child {
+  background: #3d9eff;
 }
 
 .admin-table tbody tr.admin-row--dispatch td:last-child {
   background: #3ee07a;
-}
-
-.admin-row--dispatch .admin-items li + li {
-  border-top-color: rgba(255, 255, 255, 0.35);
 }
 
 .admin-stage select {
@@ -187,6 +202,7 @@
   padding: 0.55rem 0.65rem;
 }
 
+.admin-row--produce .admin-stage select,
 .admin-row--dispatch .admin-stage select {
   background: transparent;
   color: var(--white);
@@ -207,17 +223,21 @@
   border-color: var(--white);
 }
 
+.admin-row--produce .admin-stage select:focus,
 .admin-row--dispatch .admin-stage select:focus {
   background: var(--white);
   color: var(--black);
   border-color: var(--white);
 }
 
+.admin-row--produce .admin-delete,
 .admin-row--dispatch .admin-delete {
   color: var(--white);
   border-color: var(--white);
 }
 
+.admin-row--produce .admin-delete:hover,
+.admin-row--produce .admin-delete:focus-visible,
 .admin-row--dispatch .admin-delete:hover,
 .admin-row--dispatch .admin-delete:focus-visible {
   color: var(--black);

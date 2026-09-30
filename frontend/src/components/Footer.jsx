@@ -36,7 +36,7 @@ export default function Footer() {
           </div>
           <div className="footer__col">
             <p className="eyebrow">Contact</p>
-            <a className="link" href="mailto:hello@cosinecreate.com">hello@cosinecreate.com</a>
+            <a className="link" href="mailto:cosinecreate@gmail.com">cosinecreate@gmail.com</a>
             <a className="link" href="https://linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
             <a className="link" href="https://www.instagram.com/cosinecreate.co/" target="_blank" rel="noreferrer">Instagram</a>
           </div>

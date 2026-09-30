@@ -289,7 +289,8 @@ export const PROJECTS = [
     hookStyle: "edition",
     credit: "Work done for The Groove Hangout",
     image: "/work/groove-hangout.jpg",
-    heroVideo: "/videos/groove-hangout.mp4?v=2",
+    heroVideo: "/videos/groove-hangout.mp4?v=4",
+    heroPoster: "/videos/groove-hangout-poster.jpg",
     looks: grooveLooks,
   },
 ];

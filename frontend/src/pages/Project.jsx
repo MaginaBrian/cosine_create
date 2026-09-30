@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CLOTHING_CATEGORIES, SHARED_CATEGORIES, getProject } from "../data";
+import { prefetchPath } from "../loadPage";
 import { canOrderTextiles, isBrandOwner } from "../clientHome";
 import { fetchFabrics } from "../api";
 import OrderPanel from "../components/OrderPanel";
@@ -19,7 +20,7 @@ function Category({ slug, gender, category, look, hideTitle }) {
       {hideTitle ? null : <h3>{category.label}</h3>}
       {cover ? (
         <div className="project-looks__frame">
-          <img src={cover} alt="" />
+          <img src={cover} alt="" loading="lazy" decoding="async" />
         </div>
       ) : (
         <div className="project-looks__frame" />
@@ -36,7 +37,13 @@ function Category({ slug, gender, category, look, hideTitle }) {
   }
 
   return (
-    <a href={href} className="project-cat project-cat--link" aria-label={category.label}>
+    <a
+      href={href}
+      className="project-cat project-cat--link"
+      aria-label={category.label}
+      onMouseEnter={() => prefetchPath(href)}
+      onFocus={() => prefetchPath(href)}
+    >
       {inner}
     </a>
   );
@@ -59,14 +66,15 @@ function LookColumn({ slug, gender, label, looks }) {
   );
 }
 
-function HeroBackground({ image, video }) {
+function HeroBackground({ image, video, poster }) {
   const videoRef = useRef(null);
   const [muted, setMuted] = useState(false);
 
   useEffect(() => {
     const el = videoRef.current;
-    if (!el) return undefined;
+    if (!el || !video) return undefined;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    el.src = video;
 
     const play = () => {
       if (reduce.matches) {
@@ -102,11 +110,11 @@ function HeroBackground({ image, video }) {
         <video
           ref={videoRef}
           className="project-hero__bg project-hero__bg--video"
-          src={video}
+          poster={poster}
           autoPlay
           loop
           playsInline
-          preload="auto"
+          preload="none"
         />
         <button
           type="button"
@@ -131,7 +139,7 @@ function HeroBackground({ image, video }) {
   }
 
   if (image) {
-    return <img className="project-hero__bg" src={image} alt="" />;
+    return <img className="project-hero__bg" src={image} alt="" decoding="async" />;
   }
 
   return null;
@@ -171,7 +179,7 @@ export default function Project({ slug, user }) {
   return (
     <article className="project">
       <header className={`project-hero${project.hero || project.heroVideo ? " project-hero--photo" : ""}`}>
-        <HeroBackground image={project.hero} video={project.heroVideo} />
+        <HeroBackground image={project.hero} video={project.heroVideo} poster={project.heroPoster} />
         <div className="project-hero__copy">
           <h1>{project.client}</h1>
             {project.hook ? (

@@ -1,4 +1,5 @@
 import { GROOVE_CATEGORIES, getLook } from "../data";
+import { prefetchPath } from "../loadPage";
 import "./GrooveCatalog.css";
 
 export default function GrooveCatalog() {
@@ -26,7 +27,7 @@ export default function GrooveCatalog() {
                         : ""
                     }`}
                   >
-                    <img src={cover} alt="" />
+                    <img src={cover} alt="" loading="lazy" decoding="async" />
                   </div>
                 ) : (
                   <div className="groove-catalog__frame" />
@@ -40,6 +41,8 @@ export default function GrooveCatalog() {
                     href={`#/work/the-groove-hangout/${category.id}`}
                     className="groove-catalog__item"
                     aria-label={category.label}
+                    onMouseEnter={() => prefetchPath(`#/work/the-groove-hangout/${category.id}`)}
+                    onFocus={() => prefetchPath(`#/work/the-groove-hangout/${category.id}`)}
                   >
                     {inner}
                   </a>
